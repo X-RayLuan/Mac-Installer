@@ -14,7 +14,7 @@ export default function WelcomeStep({ onNext }: { onNext: () => void }): React.J
           Easy<span className="bg-gradient-to-r from-primary to-primary-light bg-clip-text text-transparent">Claw</span>
         </h1>
         <p className="text-text-muted text-[15px] font-semibold">
-          나만의 AI 비서, 클릭 한 번으로
+          나만의 AI 에이전트, 클릭 한 번으로
         </p>
       </div>
 
