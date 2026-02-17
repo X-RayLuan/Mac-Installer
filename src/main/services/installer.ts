@@ -54,7 +54,6 @@ const runWithLog = (
 
 export const installNodeMac = async (win: BrowserWindow): Promise<void> => {
   const log = (msg: string): void => sendProgress(win, msg)
-  const arch = process.arch === 'arm64' ? 'arm64' : 'x64'
   const url = `https://nodejs.org/dist/v22.14.0/node-v22.14.0.pkg`
   const dest = join(tmpdir(), 'node-installer.pkg')
 

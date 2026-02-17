@@ -30,7 +30,6 @@ const wslPrefix = (): string[] =>
 
 const runCommand = (cmd: string, args: string[]): Promise<string> =>
   new Promise((resolve, reject) => {
-    const fullArgs = [...wslPrefix(), ...args]
     const fullCmd = wslPrefix().length > 0 ? 'wsl' : cmd
     const finalArgs = wslPrefix().length > 0 ? ['--', cmd, ...args] : args
 
