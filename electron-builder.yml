@@ -14,7 +14,7 @@ asarUnpack:
 win:
   icon: build/icon.ico
   executableName: EasyClaw
-  sign: build/sign.js
+  forceCodeSigning: false
   target:
     - target: nsis
       arch:
