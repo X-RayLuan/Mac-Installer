@@ -977,10 +977,10 @@
             msgEl.textContent = ''
             msgEl.className = 'waitlist-msg'
 
-            fetch('/api/waitlist', {
+            fetch('/api/newsletter', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: input.value })
+              body: JSON.stringify({ email: input.value, source: 'landing' })
             })
               .then(function (r) {
                 return r.json()
