@@ -20,8 +20,8 @@
     "build:win": "npm run build && electron-builder --win --publish always",
     "build:mac": "npm run build && electron-builder --mac --publish always",
     "build:linux": "electron-vite build && electron-builder --linux",
-    "build:win-local": "npm run build && electron-builder --win",
-    "build:mac-local": "npm run build && electron-builder --mac"
+    "build:win-local": "npm run build && electron-builder --win --publish never",
+    "build:mac-local": "npm run build && electron-builder --mac --publish never"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
