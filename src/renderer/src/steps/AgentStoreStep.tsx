@@ -49,7 +49,7 @@ export default function AgentStoreStep({ onBack }: { onBack: () => void }): Reac
   }
 
   return (
-    <div className="flex-1 flex flex-col px-8 py-6 overflow-y-auto">
+    <div className="flex-1 flex flex-col px-8 pt-10 pb-6 overflow-y-auto">
       {/* Header */}
       <button
         onClick={onBack}

@@ -120,59 +120,62 @@ export default function DoneStep({
   }, [])
 
   return (
-    <div className="flex-1 flex flex-col items-center px-10 gap-3 pt-4 pb-6 overflow-y-auto">
-      <div className="relative">
-        <div
-          className={`absolute inset-0 rounded-full blur-2xl scale-125 transition-colors duration-700 ${
-            status === 'running' ? 'bg-success/10' : 'bg-primary/10'
-          }`}
-        />
-        <LobsterLogo
-          state={status === 'running' ? 'success' : status === 'starting' ? 'loading' : 'idle'}
-          size={56}
-        />
+    <div className="flex-1 flex flex-col items-center justify-center px-10 gap-3 overflow-hidden">
+      {/* 로고 + 상태 */}
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <div
+            className={`absolute inset-0 rounded-full blur-2xl scale-125 transition-colors duration-700 ${
+              status === 'running' ? 'bg-success/10' : 'bg-primary/10'
+            }`}
+          />
+          <LobsterLogo
+            state={status === 'running' ? 'success' : status === 'starting' ? 'loading' : 'idle'}
+            size={44}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-2 h-2 rounded-full transition-colors duration-500 ${
+                status === 'running'
+                  ? 'bg-success'
+                  : status === 'starting'
+                    ? 'bg-warning'
+                    : 'bg-text-muted/40'
+              }`}
+              style={
+                status !== 'stopped'
+                  ? {
+                      animation: 'glow-pulse 2s infinite',
+                      color:
+                        status === 'running' ? 'var(--color-success)' : 'var(--color-warning)'
+                    }
+                  : {}
+              }
+            />
+            <span className="text-sm font-bold tracking-wide">
+              {status === 'running'
+                ? 'Gateway 실행 중'
+                : status === 'starting'
+                  ? '시작 중...'
+                  : 'Gateway 중지됨'}
+            </span>
+          </div>
+          {currentModel && (
+            <button
+              onClick={() => setShowProviderModal(true)}
+              className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <span className="text-[11px] text-text-muted">AI 모델:</span>
+              <span className="text-[11px] font-bold text-primary">{currentModel}</span>
+              <span className="text-[10px] text-text-muted/60">변경</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Status pill */}
-      <div className="glass-card flex items-center gap-2.5 px-5 py-2.5 !rounded-full">
-        <div
-          className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${
-            status === 'running'
-              ? 'bg-success'
-              : status === 'starting'
-                ? 'bg-warning'
-                : 'bg-text-muted/40'
-          }`}
-          style={
-            status !== 'stopped'
-              ? {
-                  animation: 'glow-pulse 2s infinite',
-                  color: status === 'running' ? 'var(--color-success)' : 'var(--color-warning)'
-                }
-              : {}
-          }
-        />
-        <span className="text-sm font-bold tracking-wide">
-          {status === 'running'
-            ? 'Gateway 실행 중'
-            : status === 'starting'
-              ? '시작 중...'
-              : 'Gateway 중지됨'}
-        </span>
-      </div>
-
-      {/* 현재 AI 모델 */}
-      {currentModel && (
-        <button
-          onClick={() => setShowProviderModal(true)}
-          className="glass-card flex items-center gap-2 px-4 py-2 !rounded-full cursor-pointer hover:border-primary/40 transition-all duration-200"
-        >
-          <span className="text-[11px] text-text-muted">AI 모델:</span>
-          <span className="text-[11px] font-bold text-primary">{currentModel}</span>
-          <span className="text-[10px] text-text-muted/60">변경</span>
-        </button>
-      )}
-
+      {/* 액션 버튼 */}
       <div className="flex gap-3">
         {status === 'running' && (
           <Button
@@ -219,7 +222,7 @@ export default function DoneStep({
       {/* ─── 카카오 채팅 배너 ─── */}
       <button
         onClick={() => window.open('https://open.kakao.com/o/gbBkPehi', '_blank')}
-        className="w-full max-w-md flex items-center gap-3 px-5 py-3.5 rounded-xl cursor-pointer bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] hover:border-primary/60 transition-all duration-200"
+        className="w-full max-w-md flex items-center gap-3 px-5 py-2.5 rounded-xl cursor-pointer bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 border border-primary/40 shadow-[0_0_20px_rgba(249,115,22,0.15)] hover:shadow-[0_0_24px_rgba(249,115,22,0.25)] hover:border-primary/60 transition-all duration-200"
       >
         <span className="text-lg">💬</span>
         <div className="flex-1 text-left">
@@ -241,22 +244,22 @@ export default function DoneStep({
         </svg>
       </button>
 
-      {/* ─── 액션 그리드 ─── */}
-      <div className="w-full max-w-md grid grid-cols-2 gap-2">
+      {/* ─── 액션 그리드 (3열) ─── */}
+      <div className="w-full max-w-md grid grid-cols-3 gap-2">
         <button
           onClick={toggleAutoLaunch}
-          className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-primary/40 transition-all duration-200"
+          className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">⚙️</span>
-          <span className="text-xs font-bold flex-1 text-left">자동 실행</span>
+          <span className="text-[11px] font-bold flex-1 text-left">자동 실행</span>
           <div
-            className={`w-10 h-5.5 rounded-full p-0.5 transition-colors duration-200 ${
+            className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 ${
               autoLaunch ? 'bg-primary' : 'bg-white/15'
             }`}
           >
             <div
-              className={`w-4.5 h-4.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                autoLaunch ? 'translate-x-4.5' : 'translate-x-0'
+              className={`w-3.5 h-3.5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                autoLaunch ? 'translate-x-3.5' : 'translate-x-0'
               }`}
             />
           </div>
@@ -264,67 +267,41 @@ export default function DoneStep({
         {onAgentStore && (
           <button
             onClick={onAgentStore}
-            className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-primary/40 transition-all duration-200"
+            className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
           >
             <span className="text-sm">🛒</span>
-            <span className="text-xs font-bold flex-1 text-left">에이전트 스토어</span>
-            <svg
-              className="text-text-muted"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <span className="text-[11px] font-bold flex-1 text-left">에이전트 스토어</span>
           </button>
         )}
         {onTroubleshoot && (
           <button
             onClick={onTroubleshoot}
-            className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-primary/40 transition-all duration-200"
+            className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
           >
             <span className="text-sm">🔧</span>
-            <span className="text-xs font-bold flex-1 text-left">문제 해결</span>
-            <svg
-              className="text-text-muted"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
+            <span className="text-[11px] font-bold flex-1 text-left">문제 해결</span>
           </button>
         )}
         <button
           onClick={backup.execute}
-          className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-primary/40 transition-all duration-200"
+          className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">📦</span>
-          <span className="text-xs font-bold flex-1 text-left">백업</span>
+          <span className="text-[11px] font-bold flex-1 text-left">백업</span>
         </button>
         <button
           onClick={backup.openRestore}
-          className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-primary/40 transition-all duration-200"
+          className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">📥</span>
-          <span className="text-xs font-bold flex-1 text-left">복원</span>
+          <span className="text-[11px] font-bold flex-1 text-left">복원</span>
         </button>
         <button
           onClick={uninstall.open}
-          className="glass-card flex items-center gap-2 px-4 py-2.5 cursor-pointer hover:border-error/40 transition-all duration-200"
+          className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-error/40 transition-all duration-200"
         >
           <span className="text-sm">🗑️</span>
-          <span className="text-xs font-bold flex-1 text-left text-error/80">삭제</span>
+          <span className="text-[11px] font-bold flex-1 text-left text-error/80">삭제</span>
         </button>
       </div>
 
