@@ -34,12 +34,16 @@ const runCmd = (cmd: string, args: string[], timeout = 15000): Promise<string> =
   })
 
 export const checkWslState = async (): Promise<WslState> => {
-  // wsl --version 으로 WSL 자체 설치 여부 확인
+  // wsl 사용 가능 여부 확인 (--version은 Store WSL에서만 지원)
   try {
     await runCmd('wsl', ['--version'])
   } catch {
-    // wsl 명령 자체가 없거나 실패 → Windows 버전이 낮아 WSL 미지원
-    return 'not_available'
+    // inbox WSL은 --version 미지원 → --help로 재확인
+    try {
+      await runCmd('wsl', ['--help'])
+    } catch {
+      return 'not_available'
+    }
   }
 
   // wsl --status로 리부트 필요 여부 확인
