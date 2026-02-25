@@ -4,7 +4,6 @@ import { homedir, platform } from 'os'
 import { join } from 'path'
 import { BrowserWindow, dialog } from 'electron'
 import { stopGateway, startGateway } from './gateway'
-import { getPathEnv } from './path-utils'
 import { runInWsl } from './wsl-utils'
 
 const openclawDir = (): string => join(homedir(), '.openclaw')
@@ -15,41 +14,41 @@ const formatDate = (): string => {
   return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
 }
 
-// ─── macOS: zip / unzip CLI ───
+// ─── macOS: tar ───
 
-const zipDirMac = (srcDir: string, destZip: string): Promise<void> =>
+const tarCreateMac = (destFile: string): Promise<void> =>
   new Promise((resolve, reject) => {
-    const child = spawn('zip', ['-r', destZip, '.'], { cwd: srcDir, env: getPathEnv() })
+    const child = spawn('tar', ['-czf', destFile, '-C', homedir(), '.openclaw'])
     child.stdout.resume()
     child.stderr.resume()
     child.on('close', (code) => {
       if (code === 0) resolve()
-      else reject(new Error(`zip failed (exit ${code})`))
+      else reject(new Error(`tar create failed (exit ${code})`))
     })
     child.on('error', reject)
   })
 
-const unzipMac = (zipPath: string, destDir: string): Promise<void> =>
+const tarExtractMac = (srcFile: string): Promise<void> =>
   new Promise((resolve, reject) => {
-    const child = spawn('unzip', ['-o', zipPath, '-d', destDir], { env: getPathEnv() })
+    const child = spawn('tar', ['-xzf', srcFile, '-C', homedir()])
     child.stdout.resume()
     child.stderr.resume()
     child.on('close', (code) => {
       if (code === 0) resolve()
-      else reject(new Error(`unzip failed (exit ${code})`))
+      else reject(new Error(`tar extract failed (exit ${code})`))
     })
     child.on('error', reject)
   })
 
-// ─── Windows: WSL 내 tar 사용 ───
+// ─── Windows: WSL 내 tar ───
 
-const zipDirWsl = (destZip: string): Promise<void> =>
+const tarCreateWsl = (destFile: string): Promise<void> =>
   new Promise((resolve, reject) => {
     const child = spawn('wsl', [
       '-d', 'Ubuntu', '-u', 'root', '--',
       'tar', '-czf', '-', '-C', '/root', '.openclaw'
     ])
-    const ws = createWriteStream(destZip)
+    const ws = createWriteStream(destFile)
     child.stdout.pipe(ws)
     child.stderr.resume()
     child.on('close', (code) => {
@@ -60,9 +59,9 @@ const zipDirWsl = (destZip: string): Promise<void> =>
     ws.on('error', reject)
   })
 
-const unzipWsl = (zipPath: string): Promise<void> =>
+const tarExtractWsl = (srcFile: string): Promise<void> =>
   new Promise((resolve, reject) => {
-    const rs = createReadStream(zipPath)
+    const rs = createReadStream(srcFile)
     const child = spawn('wsl', [
       '-d', 'Ubuntu', '-u', 'root', '--',
       'tar', '-xzf', '-', '-C', '/root', '--no-same-owner',
@@ -98,22 +97,19 @@ export const exportBackup = async (
     }
   }
 
-  const ext = isWin ? 'tar.gz' : 'zip'
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
     title: 'OpenClaw 백업 저장',
-    defaultPath: `openclaw-backup-${formatDate()}.${ext}`,
-    filters: isWin
-      ? [{ name: 'Tar Archive', extensions: ['tar.gz'] }]
-      : [{ name: 'ZIP Archive', extensions: ['zip'] }]
+    defaultPath: `openclaw-backup-${formatDate()}.tar.gz`,
+    filters: [{ name: 'Tar Archive', extensions: ['tar.gz'] }]
   })
 
   if (canceled || !filePath) return { success: false, error: '취소됨' }
 
   try {
     if (isWin) {
-      await zipDirWsl(filePath)
+      await tarCreateWsl(filePath)
     } else {
-      await zipDirMac(openclawDir(), filePath)
+      await tarCreateMac(filePath)
     }
     return { success: true }
   } catch (e) {
@@ -128,17 +124,14 @@ export const importBackup = async (
 
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
     title: 'OpenClaw 백업 파일 선택',
-    filters: isWin
-      ? [{ name: 'Tar Archive', extensions: ['tar.gz', 'gz'] }]
-      : [{ name: 'ZIP Archive', extensions: ['zip'] }],
+    filters: [{ name: 'Tar Archive', extensions: ['tar.gz', 'gz'] }],
     properties: ['openFile']
   })
 
   if (canceled || filePaths.length === 0) return { success: false, error: '취소됨' }
-  const zipPath = filePaths[0]
+  const backupFile = filePaths[0]
 
   try {
-    // Gateway 중지
     try {
       await stopGateway()
     } catch {
@@ -146,12 +139,11 @@ export const importBackup = async (
     }
 
     if (isWin) {
-      await unzipWsl(zipPath)
+      await tarExtractWsl(backupFile)
     } else {
-      await unzipMac(zipPath, openclawDir())
+      await tarExtractMac(backupFile)
     }
 
-    // Gateway 재시작
     try {
       await startGateway()
     } catch {

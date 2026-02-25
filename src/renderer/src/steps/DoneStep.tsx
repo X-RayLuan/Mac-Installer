@@ -103,7 +103,7 @@ export default function DoneStep({
   }, [])
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-10 gap-6">
+    <div className="flex-1 flex flex-col items-center px-10 gap-6 pt-8 pb-10 overflow-y-auto">
       <div className="relative">
         <div
           className={`absolute inset-0 rounded-full blur-3xl scale-150 transition-colors duration-700 ${
