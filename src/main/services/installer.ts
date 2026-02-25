@@ -148,8 +148,11 @@ export const installNodeWsl = async (win: BrowserWindow): Promise<void> => {
   )
 
   log('Node.js LTS 설치 중...')
-  // nvm 설치 직후 bash -lc로 실행하면 .bashrc에서 nvm 로드됨
-  await runInWsl('nvm install --lts', 120000)
+  // root의 .profile이 .bashrc를 source하지 않는 WSL 환경 대응
+  await runInWsl(
+    'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm install --lts',
+    120000
+  )
 
   log('Node.js 설치 완료!')
 }
