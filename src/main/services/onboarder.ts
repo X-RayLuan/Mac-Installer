@@ -11,6 +11,7 @@ interface OnboardConfig {
   provider: 'anthropic' | 'google' | 'openai' | 'deepseek' | 'glm'
   apiKey: string
   telegramBotToken?: string
+  modelId?: string
 }
 
 interface OnboardResult {
@@ -303,7 +304,7 @@ export const runOnboard = async (
     cfg.agents.defaults = cfg.agents.defaults ?? {}
     cfg.agents.defaults.model = {
       ...cfg.agents.defaults.model,
-      primary: defaultModels[config.provider]
+      primary: config.modelId || defaultModels[config.provider]
     }
     const spec = modelSpecs[config.provider]
     if (spec && cfg.models?.providers) {

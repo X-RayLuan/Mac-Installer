@@ -145,6 +145,7 @@ export const registerIpcHandlers = (getWin: () => BrowserWindow | null): void =>
         provider: 'anthropic' | 'google' | 'openai' | 'deepseek' | 'glm'
         apiKey: string
         telegramBotToken?: string
+        modelId?: string
       }
     ) => {
       try {
