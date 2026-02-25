@@ -130,27 +130,20 @@ export const installWsl = async (win: BrowserWindow): Promise<{ needsReboot: boo
   return { needsReboot: true }
 }
 
-/** WSL Ubuntu 내부에 nvm + Node.js LTS 설치 */
+/** WSL Ubuntu 내부에 Node.js 22 LTS 설치 (NodeSource apt 저장소) */
 export const installNodeWsl = async (win: BrowserWindow): Promise<void> => {
   const log = (msg: string): void => sendProgress(win, msg)
 
   log('WSL 내부에 필수 패키지 설치 중...')
   try {
-    await runInWsl('apt-get update && apt-get install -y curl', 60000)
+    await runInWsl('apt-get update && apt-get install -y curl ca-certificates gnupg', 60000)
   } catch {
-    log('apt-get 실패 — curl이 이미 설치되어 있을 수 있습니다')
+    log('apt-get 실패 — 필수 패키지가 이미 설치되어 있을 수 있습니다')
   }
 
-  log('nvm 설치 중...')
+  log('Node.js 22 LTS 설치 중...')
   await runInWsl(
-    'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash',
-    60000
-  )
-
-  log('Node.js LTS 설치 중...')
-  // root의 .profile이 .bashrc를 source하지 않는 WSL 환경 대응
-  await runInWsl(
-    'export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" && nvm install --lts',
+    'curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs',
     120000
   )
 
