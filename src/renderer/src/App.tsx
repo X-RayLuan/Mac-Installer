@@ -67,6 +67,7 @@ function App(): React.JSX.Element {
   const [provider, setProvider] = useState<'anthropic' | 'google' | 'openai' | 'deepseek' | 'glm'>(
     'anthropic'
   )
+  const [modelId, setModelId] = useState<string | undefined>()
   const [botUsername, setBotUsername] = useState<string | undefined>()
   const [isWindows, setIsWindows] = useState(false)
   const [wslState, setWslState] = useState<WslState>('ready')
@@ -149,10 +150,21 @@ function App(): React.JSX.Element {
             <InstallStep needs={installNeeds} onDone={() => goTo('apiKeyGuide')} />
           )}
           {currentStep === 'apiKeyGuide' && (
-            <ApiKeyGuideStep provider={provider} onSelectProvider={setProvider} onNext={next} />
+            <ApiKeyGuideStep
+              provider={provider}
+              onSelectProvider={(p) => {
+                setProvider(p)
+                setModelId(undefined)
+              }}
+              modelId={modelId}
+              onSelectModel={setModelId}
+              onNext={next}
+            />
           )}
           {currentStep === 'telegramGuide' && <TelegramGuideStep onNext={next} />}
-          {currentStep === 'config' && <ConfigStep provider={provider} onDone={handleDone} />}
+          {currentStep === 'config' && (
+            <ConfigStep provider={provider} modelId={modelId} onDone={handleDone} />
+          )}
           {currentStep === 'done' && (
             <DoneStep
               botUsername={botUsername}

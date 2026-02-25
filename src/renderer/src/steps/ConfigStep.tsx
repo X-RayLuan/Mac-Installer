@@ -26,10 +26,11 @@ const BOT_TOKEN_PATTERN = /^\d+:[A-Za-z0-9_-]+$/
 
 interface Props {
   provider: Provider
+  modelId?: string
   onDone: (botUsername?: string) => void
 }
 
-export default function ConfigStep({ provider, onDone }: Props): React.JSX.Element {
+export default function ConfigStep({ provider, modelId, onDone }: Props): React.JSX.Element {
   const [apiKey, setApiKey] = useState('')
   const [botToken, setBotToken] = useState('')
   const [saving, setSaving] = useState(false)
@@ -50,7 +51,8 @@ export default function ConfigStep({ provider, onDone }: Props): React.JSX.Eleme
       const result = await window.electronAPI.onboard.run({
         provider,
         apiKey,
-        telegramBotToken: botToken || undefined
+        telegramBotToken: botToken || undefined,
+        modelId
       })
       if (result.success) {
         onDone(result.botUsername)

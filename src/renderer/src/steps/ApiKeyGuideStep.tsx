@@ -1,12 +1,10 @@
 import Button from '../components/Button'
-
-type Provider = 'anthropic' | 'google' | 'openai' | 'deepseek' | 'glm'
+import { providerConfigs, type Provider } from '../constants/providers'
 
 const providerMeta: Record<
   Provider,
   {
     name: string
-    model: string
     consoleUrl: string
     consoleLabel: string
     emojis: string[]
@@ -15,7 +13,6 @@ const providerMeta: Record<
 > = {
   google: {
     name: 'Google Gemini',
-    model: 'Gemini 3 Flash',
     consoleUrl: 'https://aistudio.google.com/apikey',
     consoleLabel: 'AI Studio 바로가기',
     emojis: ['🌐', '🔑', '📋'],
@@ -36,7 +33,6 @@ const providerMeta: Record<
   },
   openai: {
     name: 'OpenAI',
-    model: 'GPT-5.2',
     consoleUrl: 'https://platform.openai.com/api-keys',
     consoleLabel: 'Platform 바로가기',
     emojis: ['🌐', '💳', '🔑', '📋'],
@@ -61,7 +57,6 @@ const providerMeta: Record<
   },
   anthropic: {
     name: 'Anthropic',
-    model: 'Sonnet 4.6',
     consoleUrl: 'https://console.anthropic.com/settings/keys',
     consoleLabel: '콘솔 바로가기',
     emojis: ['🌐', '💳', '🔑', '📋'],
@@ -86,7 +81,6 @@ const providerMeta: Record<
   },
   deepseek: {
     name: 'DeepSeek',
-    model: 'DeepSeek Chat',
     consoleUrl: 'https://platform.deepseek.com/api_keys',
     consoleLabel: 'Platform 바로가기',
     emojis: ['🌐', '💳', '🔑', '📋'],
@@ -111,7 +105,6 @@ const providerMeta: Record<
   },
   glm: {
     name: 'Z.AI (智谱)',
-    model: 'GLM-5',
     consoleUrl: 'https://z.ai/manage-apikey/apikey-list',
     consoleLabel: 'Z.AI 바로가기',
     emojis: ['🌐', '💳', '🔑', '📋'],
@@ -141,15 +134,21 @@ const providerOrder: Provider[] = ['google', 'openai', 'anthropic', 'deepseek', 
 interface Props {
   provider: Provider
   onSelectProvider: (p: Provider) => void
+  modelId?: string
+  onSelectModel: (id: string) => void
   onNext: () => void
 }
 
 export default function ApiKeyGuideStep({
   provider,
   onSelectProvider,
+  modelId,
+  onSelectModel,
   onNext
 }: Props): React.JSX.Element {
   const meta = providerMeta[provider]
+  const providerConfig = providerConfigs.find((p) => p.id === provider)!
+  const selectedModelId = modelId ?? providerConfig.models[0].id
 
   return (
     <div className="flex-1 relative px-8">
@@ -170,9 +169,38 @@ export default function ApiKeyGuideStep({
             <p className={`text-xs font-bold ${provider === p ? 'text-primary' : ''}`}>
               {providerMeta[p].name}
             </p>
-            <p className="text-[9px] mt-0.5 opacity-60">{providerMeta[p].model}</p>
           </button>
         ))}
+      </div>
+
+      {/* 모델 선택 */}
+      <div className="space-y-1 mt-2">
+        <label className="text-xs font-bold text-text-muted">모델 선택</label>
+        <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+          {providerConfig.models.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => onSelectModel(m.id)}
+              className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left transition-all duration-150 cursor-pointer ${
+                selectedModelId === m.id
+                  ? 'bg-primary/15 border border-primary/40'
+                  : 'bg-white/5 border border-transparent hover:bg-white/8'
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full border-2 shrink-0 transition-colors ${
+                  selectedModelId === m.id
+                    ? 'border-primary bg-primary'
+                    : 'border-text-muted/30 bg-transparent'
+                }`}
+              />
+              <div className="min-w-0 flex items-baseline gap-1.5">
+                <span className="text-xs font-bold whitespace-nowrap">{m.name}</span>
+                <span className="text-[10px] text-text-muted/60 truncate">{m.desc}</span>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <a

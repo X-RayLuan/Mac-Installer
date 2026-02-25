@@ -55,6 +55,7 @@ interface ElectronAPI {
       provider: 'anthropic' | 'google' | 'openai' | 'deepseek' | 'glm'
       apiKey: string
       telegramBotToken?: string
+      modelId?: string
     }) => Promise<{ success: boolean; error?: string; botUsername?: string }>
   }
   reboot: () => void
