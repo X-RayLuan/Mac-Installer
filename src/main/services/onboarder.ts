@@ -62,23 +62,19 @@ const createRunCmd = (): ((
     new Promise((resolve, reject) => {
       let fullCmd: string
       let fullArgs: string[]
-      let useShell: boolean
 
       if (isWindows) {
         // WSL 모드: wsl -d Ubuntu -u root -- bash -lc "cmd args..."
         const script = `${cmd} ${args.map((a) => `'${a.replace(/'/g, "'\\''")}'`).join(' ')}`
         fullCmd = 'wsl'
         fullArgs = ['-d', 'Ubuntu', '-u', 'root', '--', 'bash', '-lc', script]
-        useShell = true
       } else {
         fullCmd = cmd
         fullArgs = args
-        useShell = false
       }
 
       const child = spawn(fullCmd, fullArgs, {
-        env: isWindows ? process.env : getPathEnv(),
-        shell: useShell
+        env: isWindows ? process.env : getPathEnv()
       })
 
       const outDecoder = new StringDecoder('utf8')
@@ -95,13 +91,17 @@ const createRunCmd = (): ((
 
 const wslKillOpenclaw = (): Promise<void> =>
   new Promise((resolve) => {
-    const child = spawn(
-      'wsl',
-      ['-d', 'Ubuntu', '-u', 'root', '--', 'pkill', '-9', '-f', 'openclaw'],
-      {
-        shell: true
-      }
-    )
+    const child = spawn('wsl', [
+      '-d',
+      'Ubuntu',
+      '-u',
+      'root',
+      '--',
+      'pkill',
+      '-9',
+      '-f',
+      'openclaw'
+    ])
     child.on('close', () => resolve())
     child.on('error', () => resolve())
   })
