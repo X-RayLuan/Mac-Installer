@@ -50,6 +50,9 @@ src/renderer/    → Renderer process (React UI)
 | `tray-manager.ts`   | 시스템 트레이 아이콘 + 10초 폴링으로 Gateway 상태 모니터링    |
 | `updater.ts`        | `electron-updater` 기반 자동 업데이트 (체크→다운로드→설치)    |
 | `troubleshooter.ts` | 포트 점유 확인, `openclaw doctor --fix` 실행 등 진단 도구     |
+| `agent-store.ts`    | 에이전트 라이선스 활성화(Lemon Squeezy) 및 설치 관리          |
+| `uninstaller.ts`    | OpenClaw 삭제 (npm uninstall -g + 설정 디렉토리 정리)         |
+| `backup.ts`         | OpenClaw 설정 백업/복원 (tar 기반, WSL 지원)                  |
 
 ### IPC 통신 패턴
 
@@ -73,19 +76,19 @@ IPC 채널 추가 시: `ipc-handlers.ts` 핸들러 → `preload/index.ts` electr
 
 `welcome` → `envCheck` → (`wslSetup`) → (`install`) → `apiKeyGuide` → `telegramGuide` → `config` → `done`
 
-- `troubleshoot` 스텝은 STEPS 배열에 미포함, `DoneStep`에서 `goTo('troubleshoot')`로 직접 진입
+- `troubleshoot`, `agentStore` 스텝은 STEPS 배열에 미포함, `DoneStep`에서 `goTo()`로 직접 진입
 - `wslSetup` 스텝은 Windows + WSL 미준비 시에만 진입
 - `install` 스텝은 환경 체크 결과에 따라 조건부 진입
 - `goTo()`로 스텝 건너뛰기 가능, `history` ref로 뒤로가기 지원
 - 각 Step 컴포넌트는 `src/renderer/src/steps/`에 위치, `onNext`/`onDone` 콜백으로 전환
-- 지원 Provider: `anthropic | google | openai | deepseek | glm`
+- 지원 Provider: `anthropic | google | openai | minimax | glm`
 
 ### Windows 지원 방식 (WSL 모드)
 
 Windows에서는 WSL(Windows Subsystem for Linux) Ubuntu 내에서 Node.js/OpenClaw를 실행.
 
 - **`wsl-utils.ts`**: 모든 WSL 명령의 기반. `wsl -d Ubuntu -u root` 패턴으로 사용자 설정 프롬프트를 건너뜀
-  - `checkWslState()`: WSL 상태 판별 (`not_available` → `not_installed` → `needs_reboot` → `no_distro` → `ready`)
+  - `checkWslState()`: WSL 상태 판별 (`not_available` → `not_installed` → `needs_reboot` → `no_distro` → `not_initialized` → `ready`)
   - `runInWsl(script)`: `bash -lc`로 nvm PATH 포함하여 WSL 내 명령 실행
   - `readWslFile(path)` / `writeWslFile(path, content)`: WSL 내 파일 읽기/쓰기
 - **WSL 설치 플로우**: `installWsl()` → 재부팅 → `installNodeWsl()` (nvm + LTS) → `installOpenClawWsl()` (npm -g)
@@ -97,18 +100,18 @@ Windows에서는 WSL(Windows Subsystem for Linux) Ubuntu 내에서 Node.js/OpenC
 
 코드는 `ybgwon96/easyclaw` (private), 바이너리는 `ybgwon96/easyclaw-releases` (public)에 분리.
 
-**릴리즈 절차:**
+**릴리즈 절차** (`npm run release` = `scripts/release.mjs`):
 
-1. `package.json` 버전 bump (`npm version patch --no-git-tag-version`)
-2. 커밋 & 푸시
-3. `gh release create vX.Y.Z` 로 private 저장소에 릴리즈 생성
-4. GitHub Actions가 자동으로: macOS/Windows 빌드 → `easyclaw-releases`에 릴리즈 + 바이너리 업로드
+1. 클린 워킹 트리 확인
+2. `npm version {bump} --no-git-tag-version` (patch/minor/major)
+3. 커밋 & 푸시 (`chore: bump version to vX.Y.Z`)
+4. `gh release create vX.Y.Z` (easyclaw 저장소에 릴리즈 생성)
+5. `gh workflow run build.yml --repo ybgwon96/easyclaw-releases -f tag=vX.Y.Z` (빌드 트리거)
 
-**워크플로우 구조** (`.github/workflows/release.yml`):
+**워크플로우 구조**:
 
-- `build-mac` (macos-latest): `build:mac-local` → artifact 업로드
-- `build-win` (windows-latest): `build:win-local` → artifact 업로드
-- `publish` (ubuntu-latest): 두 빌드 완료 후 `easyclaw-releases` 저장소에 `gh release create`
+- `.github/workflows/release.yml` (easyclaw): 릴리즈 발행 시 `easyclaw-releases`의 `build.yml` 트리거만 수행
+- 실제 빌드는 `easyclaw-releases` 저장소의 GitHub Actions에서 macOS/Windows 빌드 + 바이너리 업로드
 
 **시크릿**: `RELEASE_TOKEN` (fine-grained PAT, `easyclaw-releases` 저장소 Contents Read/Write 권한)
 
@@ -123,12 +126,13 @@ Windows에서는 WSL(Windows Subsystem for Linux) Ubuntu 내에서 Node.js/OpenC
 
 - `docs/`: 정적 마케팅 페이지 (easyclaw.kr)
 - `api/newsletter.js`: 뉴스레터 구독 서버리스 함수
+- `api/waitlist.js`: 대기 목록 서버리스 함수 (Vercel Blob 저장)
 - `vercel.json`으로 설정, Electron 앱과는 독립적
 
 ## 코드 스타일
 
 - Prettier: 싱글쿼트, 세미콜론 없음, 100자 폭, trailing comma 없음
-- ESLint: `@electron-toolkit/eslint-config-ts` + React hooks/refresh 규칙
+- ESLint: `@electron-toolkit/eslint-config-ts` + `eslint-config-prettier` + React hooks/refresh 규칙
 - 들여쓰기: 스페이스 2칸, LF 줄바꿈
 
 ## UI 테마
@@ -150,6 +154,7 @@ Windows에서는 WSL(Windows Subsystem for Linux) Ubuntu 내에서 Node.js/OpenC
 | 리부트 복원 만료   | 24시간    | `ipc-handlers.ts`                                           |
 | 트레이 폴링 간격   | 10초      | `tray-manager.ts`                                           |
 | 업데이트 체크 지연 | 5초       | `index.ts`                                                  |
+| OC 업데이트 체크   | 30분      | `DoneStep.tsx`                                              |
 
 ## 주의사항
 
