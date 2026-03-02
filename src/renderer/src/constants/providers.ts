@@ -119,7 +119,7 @@ export const providerConfigs: ProviderConfig[] = [
   {
     id: 'glm',
     label: 'Z.AI',
-    placeholder: 'API 키 입력',
+    placeholder: 'API key',
     pattern: /^.{8,}$/,
     models: [
       { id: 'zai/glm-5', name: 'GLM-5', desc: '최신 최고 성능 (추천)', price: '$1/$3.2' },

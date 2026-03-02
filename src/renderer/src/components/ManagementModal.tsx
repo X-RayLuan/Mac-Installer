@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 
 export type ModalPhase = 'confirm' | 'progress' | 'done' | 'error'
@@ -17,6 +18,8 @@ export default function ManagementModal({
   children?: React.ReactNode
   onClose: () => void
 }): React.JSX.Element {
+  const { t } = useTranslation('management')
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="glass-card w-full max-w-sm mx-4 p-6 space-y-4">
@@ -35,24 +38,24 @@ export default function ManagementModal({
                 strokeLinecap="round"
               />
             </svg>
-            <p className="text-sm text-text-muted">{message || '처리 중...'}</p>
+            <p className="text-sm text-text-muted">{message || t('modal.processing')}</p>
           </div>
         )}
 
         {phase === 'done' && (
           <div className="space-y-3">
-            <p className="text-sm text-success font-medium">{message || '완료!'}</p>
+            <p className="text-sm text-success font-medium">{message || t('modal.done')}</p>
             <Button variant="secondary" size="sm" onClick={onClose}>
-              닫기
+              {t('modal.close')}
             </Button>
           </div>
         )}
 
         {phase === 'error' && (
           <div className="space-y-3">
-            <p className="text-sm text-error">{errorMsg || '오류가 발생했습니다.'}</p>
+            <p className="text-sm text-error">{errorMsg || t('modal.errorOccurred')}</p>
             <Button variant="secondary" size="sm" onClick={onClose}>
-              닫기
+              {t('modal.close')}
             </Button>
           </div>
         )}

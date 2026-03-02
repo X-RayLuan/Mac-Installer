@@ -1,9 +1,17 @@
+import { useTranslation } from 'react-i18next'
 import LobsterLogo from '../components/LobsterLogo'
 import Button from '../components/Button'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 export default function WelcomeStep({ onNext }: { onNext: () => void }): React.JSX.Element {
+  const { t } = useTranslation('steps')
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-10 gap-7">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="relative">
         <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl scale-150" />
         <LobsterLogo state="idle" size={150} />
@@ -16,17 +24,15 @@ export default function WelcomeStep({ onNext }: { onNext: () => void }): React.J
             Claw
           </span>
         </h1>
-        <p className="text-text-muted text-[15px] font-semibold">
-          나만의 AI 에이전트, 클릭 한 번으로
-        </p>
+        <p className="text-text-muted text-[15px] font-semibold">{t('welcome.title')}</p>
       </div>
 
       <p className="text-text-muted/60 text-xs text-center leading-relaxed max-w-[260px] whitespace-pre-line">
-        {'OpenClaw를 쉽고 빠르게 설치하고\n텔레그램으로 AI와 대화하세요'}
+        {t('welcome.desc')}
       </p>
 
       <Button variant="primary" size="lg" onClick={onNext}>
-        시작하기
+        {t('welcome.start')}
       </Button>
     </div>
   )

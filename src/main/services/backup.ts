@@ -6,6 +6,7 @@ import https from 'https'
 import { BrowserWindow, dialog } from 'electron'
 import { stopGateway, startGateway, waitUntilStopped } from './gateway'
 import { runInWsl, readWslFile } from './wsl-utils'
+import { t } from '../../shared/i18n/main'
 
 const openclawDir = (): string => join(homedir(), '.openclaw')
 
@@ -185,23 +186,23 @@ export const exportBackup = async (
 
   // 소스 확인
   if (!isWin && !existsSync(openclawDir())) {
-    return { success: false, error: '백업할 OpenClaw 설정이 없습니다.' }
+    return { success: false, error: t('backup.noConfig') }
   }
   if (isWin) {
     try {
       await runInWsl('test -d /root/.openclaw', 10000)
     } catch {
-      return { success: false, error: '백업할 OpenClaw 설정이 없습니다.' }
+      return { success: false, error: t('backup.noConfig') }
     }
   }
 
   const { canceled, filePath } = await dialog.showSaveDialog(win, {
-    title: 'OpenClaw 백업 저장',
+    title: t('backup.saveTitle'),
     defaultPath: `openclaw-backup-${formatDate()}.tar.gz`,
     filters: [{ name: 'Tar Archive', extensions: ['tar.gz'] }]
   })
 
-  if (canceled || !filePath) return { success: false, error: '취소됨' }
+  if (canceled || !filePath) return { success: false, error: 'CANCELLED' }
 
   try {
     if (isWin) {
@@ -221,12 +222,12 @@ export const importBackup = async (
   const isWin = platform() === 'win32'
 
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
-    title: 'OpenClaw 백업 파일 선택',
+    title: t('backup.selectTitle'),
     filters: [{ name: 'Tar Archive', extensions: ['tar.gz', 'gz'] }],
     properties: ['openFile']
   })
 
-  if (canceled || filePaths.length === 0) return { success: false, error: '취소됨' }
+  if (canceled || filePaths.length === 0) return { success: false, error: 'CANCELLED' }
   const backupFile = filePaths[0]
 
   try {

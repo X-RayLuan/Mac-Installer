@@ -1,39 +1,21 @@
+import { useTranslation } from 'react-i18next'
 import Button from '../components/Button'
 
 const emojis = ['🔍', '⌨️', '✏️', '🚀', '📋']
 
-const steps = [
-  {
-    title: 'BotFather 검색',
-    desc: '텔레그램 앱에서 @BotFather를 검색하세요. 파란 체크 표시가 있는 공식 봇을 선택합니다.'
-  },
-  {
-    title: '/newbot 명령 입력',
-    desc: 'BotFather 대화에서 /newbot 을 입력하면 봇 이름을 물어봅니다.'
-  },
-  {
-    title: '봇 표시 이름 입력',
-    desc: '봇의 표시 이름을 입력하세요. 예: EASYCLAW'
-  },
-  {
-    title: '봇 유저네임 정하기',
-    desc: '_bot으로 끝나는 고유 ID를 입력하세요. 예: my_easyclaw_bot'
-  },
-  {
-    title: '봇 토큰 복사',
-    desc: '생성 완료! 123456:ABCDEF... 형태의 토큰을 꼭 복사해 두세요.'
-  }
-]
-
 export default function TelegramGuideStep({ onNext }: { onNext: () => void }): React.JSX.Element {
+  const { t } = useTranslation('steps')
+  const steps = t('telegramGuide.steps', { returnObjects: true }) as {
+    title: string
+    desc: string
+  }[]
+
   return (
     <div className="flex-1 flex flex-col min-h-0 px-8">
       <div className="flex-1">
         <div className="text-center space-y-0.5 pt-2 pb-1">
-          <h2 className="text-lg font-extrabold">텔레그램 봇 만들기</h2>
-          <p className="text-text-muted text-xs">
-            AI 에이전트와 대화할 텔레그램 봇을 만들어 봅시다
-          </p>
+          <h2 className="text-lg font-extrabold">{t('telegramGuide.title')}</h2>
+          <p className="text-text-muted text-xs">{t('telegramGuide.desc')}</p>
         </div>
 
         <a
@@ -42,7 +24,7 @@ export default function TelegramGuideStep({ onNext }: { onNext: () => void }): R
           rel="noreferrer"
           className="block text-center text-primary text-xs font-semibold hover:text-primary-light transition-colors py-1.5"
         >
-          BotFather 바로가기 &rarr;
+          {t('telegramGuide.botfatherLink')}
         </a>
 
         <div className="space-y-1">
@@ -62,7 +44,7 @@ export default function TelegramGuideStep({ onNext }: { onNext: () => void }): R
 
       <div className="shrink-0 flex justify-end py-3">
         <Button variant="primary" size="lg" onClick={onNext}>
-          토큰 준비 완료!
+          {t('telegramGuide.tokenReady')}
         </Button>
       </div>
     </div>

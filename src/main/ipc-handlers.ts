@@ -3,6 +3,8 @@ import { spawn } from 'child_process'
 import { platform } from 'os'
 import { join } from 'path'
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs'
+import i18nMain, { initI18nMain } from '../shared/i18n/main'
+import { rebuildTrayMenu } from './services/tray-manager'
 import { checkEnvironment, checkOpenclawUpdate } from './services/env-checker'
 import { checkPort, runDoctorFix } from './services/troubleshooter'
 import {
@@ -32,6 +34,32 @@ interface WizardPersistedState {
 }
 
 const getWizardStatePath = (): string => join(app.getPath('userData'), 'wizard-state.json')
+const getSettingsPath = (): string => join(app.getPath('userData'), 'settings.json')
+
+const readSettings = (): Record<string, unknown> => {
+  try {
+    const p = getSettingsPath()
+    if (existsSync(p)) return JSON.parse(readFileSync(p, 'utf-8'))
+  } catch {
+    /* ignore */
+  }
+  return {}
+}
+
+const writeSettings = (patch: Record<string, unknown>): void => {
+  const settings = { ...readSettings(), ...patch }
+  writeFileSync(getSettingsPath(), JSON.stringify(settings, null, 2))
+}
+
+export const getSavedLocale = (): string => {
+  const settings = readSettings()
+  if (typeof settings.language === 'string') return settings.language
+  const sys = app.getLocale()
+  if (sys.startsWith('ko')) return 'ko'
+  if (sys.startsWith('ja')) return 'ja'
+  if (sys.startsWith('zh')) return 'zh'
+  return 'en'
+}
 
 export const registerIpcHandlers = (getWin: () => BrowserWindow | null): void => {
   const win = (): BrowserWindow => {
@@ -309,4 +337,19 @@ export const registerIpcHandlers = (getWin: () => BrowserWindow | null): void =>
   // 백업 / 복원
   ipcMain.handle('backup:export', () => exportBackup(win()))
   ipcMain.handle('backup:import', () => importBackup(win()))
+
+  // 다국어 설정
+  ipcMain.handle('i18n:get-locale', () => i18nMain.language || getSavedLocale())
+
+  const SUPPORTED_LANGS = ['ko', 'en', 'ja', 'zh']
+
+  ipcMain.handle('i18n:set-language', async (_e, lng: string) => {
+    if (!SUPPORTED_LANGS.includes(lng)) {
+      return { success: false, error: 'Unsupported language' }
+    }
+    writeSettings({ language: lng })
+    await initI18nMain(lng)
+    rebuildTrayMenu()
+    return { success: true }
+  })
 }

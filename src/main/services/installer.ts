@@ -7,6 +7,7 @@ import https from 'https'
 import { BrowserWindow } from 'electron'
 import { runInWsl } from './wsl-utils'
 import { getPathEnv } from './path-utils'
+import { t } from '../../shared/i18n/main'
 
 type ProgressCallback = (msg: string) => void
 
@@ -109,8 +110,8 @@ const runWithLog = (
 export const installWsl = async (win: BrowserWindow): Promise<{ needsReboot: boolean }> => {
   const log = (msg: string): void => sendProgress(win, msg)
 
-  log('WSL 설치 중... (관리자 권한 필요)')
-  log('관리자 창이 열립니다. 설치가 완료될 때까지 기다려 주세요.')
+  log(t('installer.wslInstalling'))
+  log(t('installer.wslAdminPrompt'))
   try {
     const psCommand = [
       'try {',
@@ -129,10 +130,10 @@ export const installWsl = async (win: BrowserWindow): Promise<{ needsReboot: boo
 
     // exit 4294967295 = ERROR_ALREADY_EXISTS: Ubuntu가 이미 등록됨
     if (combined.includes('4294967295')) {
-      log('Ubuntu가 이미 등록되어 있습니다. 초기화를 시도합니다...')
+      log(t('installer.ubuntuAlreadyRegistered'))
       try {
         await runInWsl('echo initialized', 30000)
-        log('Ubuntu 초기화 완료!')
+        log(t('installer.ubuntuInitDone'))
         return { needsReboot: false }
       } catch {
         throw err
@@ -148,24 +149,19 @@ export const installWsl = async (win: BrowserWindow): Promise<{ needsReboot: boo
       lower.includes('access denied') ||
       lower.includes('permission')
     ) {
-      throw new Error('관리자 권한이 필요합니다. UAC 프롬프트에서 "예"를 선택해 주세요.')
+      throw new Error(t('installer.adminRequired'))
     }
     // wsl 명령어를 찾을 수 없는 경우 (Windows 버전 미지원)
     if (lower.includes('not recognized') || lower.includes('not found')) {
-      throw new Error(
-        'WSL을 사용할 수 없는 Windows 버전입니다. Windows 10 버전 2004 이상이 필요합니다.'
-      )
+      throw new Error(t('installer.windowsVersionError'))
     }
     // 가상화 비활성화
     if (lower.includes('virtualization') || lower.includes('hyper-v')) {
-      throw new Error(
-        'BIOS에서 가상화(Virtualization)를 활성화해야 합니다. ' +
-          'PC 재시작 후 BIOS 설정에서 VT-x/AMD-V를 켜 주세요.'
-      )
+      throw new Error(t('installer.biosVirtualization'))
     }
     throw err
   }
-  log('WSL 설치 완료! 재부팅이 필요합니다.')
+  log(t('installer.wslDone'))
   return { needsReboot: true }
 }
 
@@ -173,28 +169,28 @@ export const installWsl = async (win: BrowserWindow): Promise<{ needsReboot: boo
 export const installNodeWsl = async (win: BrowserWindow): Promise<void> => {
   const log = (msg: string): void => sendProgress(win, msg)
 
-  log('WSL 내부에 필수 패키지 설치 중...')
+  log(t('installer.wslPackages'))
   try {
     await runInWsl('apt-get update && apt-get install -y curl ca-certificates gnupg', 60000)
   } catch {
-    log('apt-get 실패 — 필수 패키지가 이미 설치되어 있을 수 있습니다')
+    log(t('installer.aptFailed'))
   }
 
-  log('Node.js 22 LTS 설치 중...')
+  log(t('installer.nodeWslInstalling'))
   await runInWsl(
     'curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs',
     120000
   )
 
-  log('Node.js 설치 완료!')
+  log(t('installer.nodeWslDone'))
 }
 
 /** WSL Ubuntu 내부에 openclaw 글로벌 설치 */
 export const installOpenClawWsl = async (win: BrowserWindow): Promise<void> => {
   const log = (msg: string): void => sendProgress(win, msg)
-  log('WSL 내부에 OpenClaw 설치 중...')
+  log(t('installer.ocWslInstalling'))
   await runInWsl('npm install -g openclaw@latest', 120000)
-  log('OpenClaw 설치 완료!')
+  log(t('installer.ocWslDone'))
 }
 
 // ─── macOS 설치 함수 ───
@@ -204,11 +200,11 @@ export const installNodeMac = async (win: BrowserWindow): Promise<void> => {
   const url = `https://nodejs.org/dist/v22.14.0/node-v22.14.0.pkg`
   const dest = join(tmpdir(), 'node-installer.pkg')
 
-  log('Node.js 22 다운로드 중...')
+  log(t('installer.nodeDownloading'))
   await downloadFile(url, dest)
-  log('Node.js 설치 창을 열고 있습니다...')
+  log(t('installer.nodeInstallerOpening'))
   await runWithLog('open', ['-W', dest], log)
-  log('Node.js 설치 완료!')
+  log(t('installer.nodeDone'))
 }
 
 // getPathEnv는 path-utils.ts에서 import (NODE_OPTIONS 삭제 포함)
@@ -223,25 +219,23 @@ const isXcodeCliInstalled = (): Promise<boolean> =>
 const ensureXcodeCli = async (log: ProgressCallback): Promise<void> => {
   if (await isXcodeCliInstalled()) return
 
-  log('Xcode Command Line Tools 설치 창을 열고 있습니다...')
+  log(t('installer.xcodeOpening'))
   spawn('xcode-select', ['--install'])
 
-  log('설치 팝업에서 "설치"를 눌러 주세요. 완료될 때까지 기다립니다...')
+  log(t('installer.xcodePrompt'))
   for (let i = 0; i < 120; i++) {
     await new Promise((r) => setTimeout(r, 5000))
     if (await isXcodeCliInstalled()) {
-      log('Xcode Command Line Tools 설치 완료!')
+      log(t('installer.xcodeDone'))
       return
     }
   }
-  throw new Error(
-    'Xcode Command Line Tools 설치 시간 초과. 터미널에서 xcode-select --install을 실행해 주세요.'
-  )
+  throw new Error(t('installer.xcodeTimeout'))
 }
 
 export const installOpenClaw = async (win: BrowserWindow): Promise<void> => {
   const log = (msg: string): void => sendProgress(win, msg)
-  log('OpenClaw 설치 중...')
+  log(t('installer.ocInstalling'))
 
   await ensureXcodeCli(log)
   const npmCacheDir = join(homedir(), '.npm')
@@ -259,5 +253,5 @@ export const installOpenClaw = async (win: BrowserWindow): Promise<void> => {
     env: getPathEnv()
   })
 
-  log('OpenClaw 설치 완료!')
+  log(t('installer.ocDone'))
 }

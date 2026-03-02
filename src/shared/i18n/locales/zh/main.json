@@ -1,0 +1,72 @@
+{
+  "installer": {
+    "wslInstalling": "正在安装 WSL...（需要管理员权限）",
+    "wslAdminPrompt": "将打开管理员窗口，请等待安装完成。",
+    "ubuntuAlreadyRegistered": "Ubuntu 已注册。正在尝试初始化...",
+    "ubuntuInitDone": "Ubuntu 初始化完成！",
+    "adminRequired": "需要管理员权限。请在 UAC 提示中选择\"是\"。",
+    "windowsVersionError": "当前 Windows 版本不支持 WSL。需要 Windows 10 版本 2004 或更高版本。",
+    "biosVirtualization": "需要在 BIOS 中启用虚拟化（Virtualization）。请重启电脑并在 BIOS 设置中开启 VT-x/AMD-V。",
+    "wslDone": "WSL 安装完成！需要重启。",
+    "wslPackages": "正在安装 WSL 内部必要软件包...",
+    "aptFailed": "apt-get 失败 — 必要软件包可能已安装",
+    "nodeWslInstalling": "正在安装 Node.js 22 LTS...",
+    "nodeWslDone": "Node.js 安装完成！",
+    "ocWslInstalling": "正在 WSL 内部安装 OpenClaw...",
+    "ocWslDone": "OpenClaw 安装完成！",
+    "nodeDownloading": "正在下载 Node.js 22...",
+    "nodeInstallerOpening": "正在打开 Node.js 安装窗口...",
+    "nodeDone": "Node.js 安装完成！",
+    "xcodeOpening": "正在打开 Xcode Command Line Tools 安装窗口...",
+    "xcodePrompt": "请在安装弹窗中点击\"安装\"。等待安装完成...",
+    "xcodeDone": "Xcode Command Line Tools 安装完成！",
+    "xcodeTimeout": "Xcode Command Line Tools 安装超时。请在终端运行 xcode-select --install。",
+    "ocInstalling": "正在安装 OpenClaw...",
+    "ocDone": "OpenClaw 安装完成！"
+  },
+  "onboarder": {
+    "starting": "开始 OpenClaw 初始配置...",
+    "configCreatedSkipGw": "配置文件创建完成（跳过 gateway 验证）",
+    "basicDone": "基本配置完成！",
+    "addingTelegram": "正在添加 Telegram 频道...",
+    "telegramDone": "Telegram 频道添加完成！",
+    "configNotFound": "找不到 OpenClaw 配置文件",
+    "checkingTelegram": "正在检查 Telegram 连接状态...",
+    "cleaningGateway": "正在清理现有 Gateway...",
+    "startingGateway": "正在启动 Gateway...",
+    "switchStarting": "开始切换提供商...",
+    "cleaningTelegram": "正在清理 Telegram 连接...",
+    "settingNewProvider": "正在配置新提供商...",
+    "applyingModel": "正在应用模型设置...",
+    "switchDone": "提供商切换完成！"
+  },
+  "tray": {
+    "open": "打开 EasyClaw",
+    "gwRunning": "Gateway 运行中",
+    "gwStopped": "Gateway 已停止",
+    "gwStart": "启动 Gateway",
+    "gwStop": "停止 Gateway",
+    "quit": "退出",
+    "notifyRunning": "Gateway 正在运行",
+    "notifyStopped": "Gateway 已停止",
+    "tooltipRunning": "EasyClaw - Gateway 运行中",
+    "tooltipStopped": "EasyClaw - Gateway 已停止"
+  },
+  "gateway": {
+    "processExit": "[gateway] 进程退出（code: {{code}}）",
+    "errorDetail": "[gateway] 错误详情：",
+    "error": "[gateway] 错误：{{message}}",
+    "notInstalledRetry": "[gateway] 检测到服务未安装，安装后重试"
+  },
+  "uninstaller": {
+    "stoppingGw": "正在停止 Gateway...",
+    "removing": "正在删除 OpenClaw 软件包...",
+    "removingConfig": "正在删除配置文件...",
+    "done": "删除完成！"
+  },
+  "backup": {
+    "noConfig": "没有可备份的 OpenClaw 配置。",
+    "saveTitle": "保存 OpenClaw 备份",
+    "selectTitle": "选择 OpenClaw 备份文件"
+  }
+}

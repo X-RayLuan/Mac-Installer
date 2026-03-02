@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import LobsterLogo from '../components/LobsterLogo'
 import Button from '../components/Button'
 import LogViewer from '../components/LogViewer'
@@ -16,6 +17,7 @@ export default function InstallStep({
   needs: InstallNeeds
   onDone: () => void
 }): React.JSX.Element {
+  const { t } = useTranslation('steps')
   const { logs, error, clearLogs } = useInstallLogs()
   const [installing, setInstalling] = useState(false)
   const [done, setDone] = useState(false)
@@ -50,16 +52,22 @@ export default function InstallStep({
         <LobsterLogo state={logoState} size={56} />
         <div>
           <h2 className="text-lg font-extrabold">
-            {done ? '설치 완료!' : failed ? '설치 실패' : installing ? '설치 중...' : '설치 준비'}
+            {done
+              ? t('install.done')
+              : failed
+                ? t('install.failed')
+                : installing
+                  ? t('install.progress')
+                  : t('install.ready')}
           </h2>
           <p className="text-text-muted text-xs font-medium">
             {installing
-              ? '잠시만 기다려 주세요'
+              ? t('install.wait')
               : done
-                ? '모든 항목이 준비되었습니다'
+                ? t('install.allReady')
                 : failed
-                  ? '로그를 확인해 주세요'
-                  : '아래 항목을 설치합니다'}
+                  ? t('install.checkLog')
+                  : t('install.desc')}
           </p>
         </div>
       </div>
@@ -67,12 +75,13 @@ export default function InstallStep({
       <div className="space-y-2">
         {needs.needNode && (
           <div className="glass-card px-4 py-2.5 text-xs font-semibold flex items-center gap-2">
-            <span className="text-primary">01</span> Node.js 22 LTS
+            <span className="text-primary">01</span> {t('install.nodejs')}
           </div>
         )}
         {needs.needOpenclaw && (
           <div className="glass-card px-4 py-2.5 text-xs font-semibold flex items-center gap-2">
-            <span className="text-primary">{needs.needNode ? '02' : '01'}</span> OpenClaw
+            <span className="text-primary">{needs.needNode ? '02' : '01'}</span>{' '}
+            {t('install.openclaw')}
           </div>
         )}
       </div>
@@ -83,17 +92,17 @@ export default function InstallStep({
       <div className="flex gap-3 justify-end mt-1">
         {failed && (
           <Button variant="secondary" size="sm" onClick={runInstall}>
-            다시 시도
+            {t('install.retryBtn')}
           </Button>
         )}
         {!done && !installing && !failed && (
           <Button variant="primary" size="lg" onClick={runInstall}>
-            설치 시작
+            {t('install.startBtn')}
           </Button>
         )}
         {done && (
           <Button variant="primary" size="lg" onClick={onDone}>
-            다음 단계로
+            {t('install.nextBtn')}
           </Button>
         )}
       </div>

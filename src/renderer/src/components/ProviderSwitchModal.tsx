@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import LogViewer from './LogViewer'
 import { useInstallLogs } from '../hooks/useIpc'
@@ -19,6 +20,8 @@ export default function ProviderSwitchModal({
   onClose,
   onSuccess
 }: Props): React.JSX.Element {
+  const { t } = useTranslation('management')
+  const { t: tp } = useTranslation('providers')
   const [phase, setPhase] = useState<Phase>('form')
   const initProvider = (currentProvider as Provider) || 'anthropic'
   const [provider, setProvider] = useState<Provider>(initProvider)
@@ -55,11 +58,11 @@ export default function ProviderSwitchModal({
       if (result.success) {
         setPhase('done')
       } else {
-        setErrorMsg(result.error || '전환 중 오류가 발생했습니다')
+        setErrorMsg(result.error || t('common:error.occurred'))
         setPhase('error')
       }
     } catch (e) {
-      setErrorMsg(e instanceof Error ? e.message : '알 수 없는 오류')
+      setErrorMsg(e instanceof Error ? e.message : t('common:error.unknown'))
       setPhase('error')
     }
   }
@@ -67,7 +70,7 @@ export default function ProviderSwitchModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="glass-card w-full max-w-sm mx-4 p-6 space-y-4 max-h-[85vh] flex flex-col">
-        <h3 className="text-base font-black shrink-0">AI 모델 변경</h3>
+        <h3 className="text-base font-black shrink-0">{t('providerSwitch.title')}</h3>
 
         {phase === 'form' && (
           <div className="space-y-3 overflow-y-auto min-h-0">
@@ -90,7 +93,9 @@ export default function ProviderSwitchModal({
 
             {/* Model list */}
             <div className="space-y-1">
-              <label className="text-xs font-bold text-text-muted">모델 선택</label>
+              <label className="text-xs font-bold text-text-muted">
+                {t('providerSwitch.modelSelect')}
+              </label>
               <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
                 {selected.models.map((m) => (
                   <button
@@ -111,7 +116,9 @@ export default function ProviderSwitchModal({
                     />
                     <div className="min-w-0 flex-1 flex items-baseline gap-1.5">
                       <span className="text-xs font-bold whitespace-nowrap">{m.name}</span>
-                      <span className="text-[10px] text-text-muted/60 truncate">{m.desc}</span>
+                      <span className="text-[10px] text-text-muted/60 truncate">
+                        {tp(`desc.${m.id}`, m.desc)}
+                      </span>
                       {m.price && (
                         <span className="text-[10px] text-text-muted/40 font-mono ml-auto shrink-0">
                           {m.price}
@@ -125,12 +132,14 @@ export default function ProviderSwitchModal({
 
             {/* API key input */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-text-muted">API 키</label>
+              <label className="text-xs font-bold text-text-muted">
+                {t('providerSwitch.apiKey')}
+              </label>
               <input
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder={selected.placeholder}
+                placeholder={tp(`apiKeyPlaceholder.${provider}`, selected.placeholder)}
                 className={`w-full bg-bg-input rounded-xl px-4 py-2 text-sm font-mono outline-none border transition-all duration-200 placeholder:text-text-muted/30 ${
                   apiKey && !apiKeyValid
                     ? 'border-error/50 focus:border-error'
@@ -141,10 +150,10 @@ export default function ProviderSwitchModal({
 
             <div className="flex gap-2 pt-1">
               <Button variant="secondary" size="sm" onClick={onClose}>
-                취소
+                {t('providerSwitch.cancel')}
               </Button>
               <Button variant="primary" size="sm" onClick={handleSwitch} disabled={!apiKeyValid}>
-                변경
+                {t('providerSwitch.change')}
               </Button>
             </div>
           </div>
@@ -169,7 +178,7 @@ export default function ProviderSwitchModal({
                   strokeLinecap="round"
                 />
               </svg>
-              <p className="text-sm text-text-muted">모델 전환 중...</p>
+              <p className="text-sm text-text-muted">{t('providerSwitch.switching')}</p>
             </div>
             {logs.length > 0 && <LogViewer lines={logs} />}
           </div>
@@ -177,7 +186,7 @@ export default function ProviderSwitchModal({
 
         {phase === 'done' && (
           <div className="space-y-3">
-            <p className="text-sm text-success font-medium">모델이 성공적으로 변경되었습니다!</p>
+            <p className="text-sm text-success font-medium">{t('providerSwitch.success')}</p>
             <Button
               variant="secondary"
               size="sm"
@@ -186,7 +195,7 @@ export default function ProviderSwitchModal({
                 onClose()
               }}
             >
-              닫기
+              {t('modal.close')}
             </Button>
           </div>
         )}
@@ -197,10 +206,10 @@ export default function ProviderSwitchModal({
             {logs.length > 0 && <LogViewer lines={logs} />}
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" onClick={onClose}>
-                닫기
+                {t('modal.close')}
               </Button>
               <Button variant="primary" size="sm" onClick={() => setPhase('form')}>
-                다시 시도
+                {t('providerSwitch.retry')}
               </Button>
             </div>
           </div>

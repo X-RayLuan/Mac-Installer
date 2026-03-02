@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import LobsterLogo from '../components/LobsterLogo'
 import Button from '../components/Button'
 import LogViewer from '../components/LogViewer'
 import ManagementModal from '../components/ManagementModal'
 import ProviderSwitchModal from '../components/ProviderSwitchModal'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 import { useManagement } from '../hooks/useManagement'
 
 const UPDATE_CHECK_INTERVAL = 30 * 60 * 1000 // 30분
@@ -17,6 +20,7 @@ export default function DoneStep({
   onTroubleshoot?: () => void
   onUninstallDone?: () => void
 }): React.JSX.Element {
+  const { t } = useTranslation('management')
   const [status, setStatus] = useState<'starting' | 'running' | 'stopped'>('starting')
   const [hasError, setHasError] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
@@ -34,6 +38,9 @@ export default function DoneStep({
   const [updating, setUpdating] = useState(false)
   const [updateLogs, setUpdateLogs] = useState<string[]>([])
   const updateCheckedRef = useRef(false)
+
+  const tRef = useRef<TFunction>(t)
+  tRef.current = t
 
   const { uninstall, backup } = useManagement(setStatus)
 
@@ -73,13 +80,13 @@ export default function DoneStep({
       setUpdateLogs((prev) => [...prev, msg])
     })
     const unsubError = window.electronAPI.install.onError((msg) => {
-      setUpdateLogs((prev) => [...prev, `[오류] ${msg}`])
+      setUpdateLogs((prev) => [...prev, tRef.current('done.errorPrefix', { msg })])
     })
 
     try {
       const result = await window.electronAPI.install.openclaw()
       if (result.success) {
-        setUpdateLogs((prev) => [...prev, 'Gateway 재시작 중...'])
+        setUpdateLogs((prev) => [...prev, tRef.current('done.restartingGw')])
         await window.electronAPI.gateway.restart()
         setStatus('running')
         await checkOpenclawUpdate()
@@ -152,7 +159,7 @@ export default function DoneStep({
         if (!r.success) {
           setHasError(true)
           if (r.error) {
-            setLogs((prev) => [...prev, `[오류] ${r.error}`])
+            setLogs((prev) => [...prev, tRef.current('done.errorPrefix', { msg: r.error })])
             setShowLogs(true)
           }
         }
@@ -179,7 +186,7 @@ export default function DoneStep({
     if (!r.success) {
       setHasError(true)
       if (r.error) {
-        setLogs((prev) => [...prev, `[오류] ${r.error}`])
+        setLogs((prev) => [...prev, tRef.current('done.errorPrefix', { msg: r.error })])
         setShowLogs(true)
       }
     }
@@ -194,7 +201,7 @@ export default function DoneStep({
     if (!r.success) {
       setHasError(true)
       if (r.error) {
-        setLogs((prev) => [...prev, `[오류] ${r.error}`])
+        setLogs((prev) => [...prev, tRef.current('done.errorPrefix', { msg: r.error })])
         setShowLogs(true)
       }
     }
@@ -202,6 +209,10 @@ export default function DoneStep({
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-10 gap-3 overflow-hidden">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       {/* 로고 + 상태 */}
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -236,10 +247,10 @@ export default function DoneStep({
             />
             <span className="text-sm font-bold tracking-wide">
               {status === 'running'
-                ? 'Gateway 실행 중'
+                ? t('done.gatewayRunning')
                 : status === 'starting'
-                  ? '시작 중...'
-                  : 'Gateway 중지됨'}
+                  ? t('done.gatewayStarting')
+                  : t('done.gatewayStopped')}
             </span>
           </div>
           {currentModel && (
@@ -247,9 +258,9 @@ export default function DoneStep({
               onClick={() => setShowProviderModal(true)}
               className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
             >
-              <span className="text-[11px] text-text-muted">AI 모델:</span>
+              <span className="text-[11px] text-text-muted">{t('done.aiModel')}</span>
               <span className="text-[11px] font-bold text-primary">{currentModel}</span>
-              <span className="text-[10px] text-text-muted/60">변경</span>
+              <span className="text-[10px] text-text-muted/60">{t('done.changeModel')}</span>
             </button>
           )}
         </div>
@@ -262,7 +273,7 @@ export default function DoneStep({
           <div className="flex-1 min-w-0">
             {updating ? (
               <div>
-                <span className="text-[12px] font-bold">업데이트 중...</span>
+                <span className="text-[12px] font-bold">{t('common:status.updating')}</span>
                 {updateLogs.length > 0 && (
                   <p className="text-[11px] text-text-muted/70 truncate">
                     {updateLogs[updateLogs.length - 1]}
@@ -271,9 +282,9 @@ export default function DoneStep({
               </div>
             ) : (
               <span className="text-[12px] font-bold">
-                OpenClaw v{openclawUpdate!.latest} 업데이트 가능
+                {t('done.ocUpdateAvailable', { latest: openclawUpdate!.latest })}
                 <span className="text-text-muted/50 font-normal ml-1">
-                  (현재 v{openclawUpdate!.current})
+                  ({t('done.ocCurrentVersion', { current: openclawUpdate!.current })})
                 </span>
               </span>
             )}
@@ -283,7 +294,7 @@ export default function DoneStep({
               onClick={handleOpenclawUpdate}
               className="px-3 py-1 text-[11px] font-bold rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30 transition-all duration-200 cursor-pointer whitespace-nowrap"
             >
-              업데이트
+              {t('common:button.update')}
             </button>
           )}
         </div>
@@ -300,21 +311,21 @@ export default function DoneStep({
               window.open(url, '_blank')
             }}
           >
-            텔레그램 열기
+            {t('done.openTelegram')}
           </Button>
         )}
         {status === 'running' ? (
           <>
             <Button variant="secondary" size="sm" onClick={handleRestart}>
-              재시작
+              {t('done.restartBtn')}
             </Button>
             <Button variant="secondary" size="sm" onClick={handleStop}>
-              중지
+              {t('done.stopBtn')}
             </Button>
           </>
         ) : status === 'stopped' ? (
           <Button variant="secondary" size="sm" onClick={handleStart}>
-            다시 시작
+            {t('done.startBtn')}
           </Button>
         ) : null}
       </div>
@@ -326,8 +337,8 @@ export default function DoneStep({
             onClick={() => setShowLogs((v) => !v)}
             className="text-[11px] text-text-muted/60 hover:text-text-muted transition-colors mb-1"
           >
-            {showLogs ? '▼ 로그 숨기기' : '▶ 로그 보기'}
-            {hasError && <span className="ml-1.5 text-error">● 오류 감지</span>}
+            {showLogs ? t('done.hideLog') : t('done.showLog')}
+            {hasError && <span className="ml-1.5 text-error">{t('done.errorDetected')}</span>}
           </button>
           {showLogs && <LogViewer lines={logs} />}
         </div>
@@ -340,8 +351,8 @@ export default function DoneStep({
       >
         <span className="text-lg">💬</span>
         <div className="flex-1 text-left">
-          <span className="text-sm font-bold">카카오 오픈채팅</span>
-          <p className="text-[11px] text-text-muted/70">궁금한 점을 물어보세요!</p>
+          <span className="text-sm font-bold">{t('done.kakaoChat')}</span>
+          <p className="text-[11px] text-text-muted/70">{t('done.kakaoChatDesc')}</p>
         </div>
         <svg
           className="text-primary/70"
@@ -365,7 +376,7 @@ export default function DoneStep({
           className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">⚙️</span>
-          <span className="text-[11px] font-bold flex-1 text-left">자동 실행</span>
+          <span className="text-[11px] font-bold flex-1 text-left">{t('done.autoLaunch')}</span>
           <div
             className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 ${
               autoLaunch ? 'bg-primary' : 'bg-white/15'
@@ -384,7 +395,7 @@ export default function DoneStep({
             className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
           >
             <span className="text-sm">🔧</span>
-            <span className="text-[11px] font-bold flex-1 text-left">문제 해결</span>
+            <span className="text-[11px] font-bold flex-1 text-left">{t('done.troubleshoot')}</span>
           </button>
         )}
         <button
@@ -392,28 +403,30 @@ export default function DoneStep({
           className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">📦</span>
-          <span className="text-[11px] font-bold flex-1 text-left">백업</span>
+          <span className="text-[11px] font-bold flex-1 text-left">{t('done.backup')}</span>
         </button>
         <button
           onClick={backup.openRestore}
           className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-primary/40 transition-all duration-200"
         >
           <span className="text-sm">📥</span>
-          <span className="text-[11px] font-bold flex-1 text-left">복원</span>
+          <span className="text-[11px] font-bold flex-1 text-left">{t('done.restore')}</span>
         </button>
         <button
           onClick={uninstall.open}
           className="glass-card flex items-center gap-2 px-3 py-2 cursor-pointer hover:border-error/40 transition-all duration-200"
         >
           <span className="text-sm">🗑️</span>
-          <span className="text-[11px] font-bold flex-1 text-left text-error/80">삭제</span>
+          <span className="text-[11px] font-bold flex-1 text-left text-error/80">
+            {t('done.delete')}
+          </span>
         </button>
       </div>
 
       {/* ─── 삭제 모달 ─── */}
       {uninstall.modal && (
         <ManagementModal
-          title="OpenClaw 삭제"
+          title={t('uninstall.title')}
           phase={uninstall.modal}
           message={uninstall.progress}
           errorMsg={uninstall.error}
@@ -424,9 +437,7 @@ export default function DoneStep({
           }}
         >
           <div className="space-y-3">
-            <p className="text-sm text-text-muted">
-              OpenClaw 패키지를 삭제합니다. 이 작업은 되돌릴 수 없습니다.
-            </p>
+            <p className="text-sm text-text-muted">{t('uninstall.desc')}</p>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -434,17 +445,17 @@ export default function DoneStep({
                 onChange={(e) => uninstall.setRemoveConfig(e.target.checked)}
                 className="w-4 h-4 rounded border-glass-border accent-primary"
               />
-              <span className="text-sm">설정 파일도 함께 삭제 (~/.openclaw)</span>
+              <span className="text-sm">{t('uninstall.removeConfig')}</span>
             </label>
             <div className="flex gap-2 pt-1">
               <Button variant="secondary" size="sm" onClick={uninstall.close}>
-                취소
+                {t('common:button.cancel')}
               </Button>
               <button
                 onClick={uninstall.execute}
                 className="px-5 py-2 text-sm font-bold rounded-xl bg-error/20 text-error border border-error/30 hover:bg-error/30 transition-all duration-200 cursor-pointer"
               >
-                삭제
+                {t('common:button.delete')}
               </button>
             </div>
           </div>
@@ -454,22 +465,20 @@ export default function DoneStep({
       {/* ─── 복원 모달 ─── */}
       {backup.restoreModal && (
         <ManagementModal
-          title="백업 복원"
+          title={t('backupRestore.restoreTitle')}
           phase={backup.restoreModal}
           message={backup.restoreMsg}
           errorMsg={backup.restoreMsg}
           onClose={backup.closeRestore}
         >
           <div className="space-y-3">
-            <p className="text-sm text-text-muted">
-              백업 파일에서 설정을 복원합니다. 기존 설정은 덮어쓰기됩니다.
-            </p>
+            <p className="text-sm text-text-muted">{t('backupRestore.restoreDesc')}</p>
             <div className="flex gap-2 pt-1">
               <Button variant="secondary" size="sm" onClick={backup.closeRestore}>
-                취소
+                {t('common:button.cancel')}
               </Button>
               <Button variant="primary" size="sm" onClick={backup.executeRestore}>
-                파일 선택
+                {t('backupRestore.selectFile')}
               </Button>
             </div>
           </div>
@@ -479,7 +488,7 @@ export default function DoneStep({
       {/* ─── 백업 모달 ─── */}
       {backup.backupModal && backup.backupModal !== 'confirm' && (
         <ManagementModal
-          title="설정 백업"
+          title={t('done.settingsBackup')}
           phase={backup.backupModal}
           message={backup.backupMsg}
           errorMsg={backup.backupMsg}

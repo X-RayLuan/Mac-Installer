@@ -1,31 +1,27 @@
+import { useTranslation } from 'react-i18next'
 import Button from '../components/Button'
 import { providerConfigs, type Provider } from '../constants/providers'
 
-const providerMeta: Record<Provider, { name: string; consoleUrl: string; consoleLabel: string }> = {
+const providerMeta: Record<Provider, { name: string; consoleUrl: string }> = {
   google: {
     name: 'Google Gemini',
-    consoleUrl: 'https://aistudio.google.com/apikey',
-    consoleLabel: 'AI Studio에서 API 키 발급'
+    consoleUrl: 'https://aistudio.google.com/apikey'
   },
   openai: {
     name: 'OpenAI',
-    consoleUrl: 'https://platform.openai.com/api-keys',
-    consoleLabel: 'Platform에서 API 키 발급'
+    consoleUrl: 'https://platform.openai.com/api-keys'
   },
   anthropic: {
     name: 'Anthropic',
-    consoleUrl: 'https://console.anthropic.com/settings/keys',
-    consoleLabel: '콘솔에서 API 키 발급'
+    consoleUrl: 'https://console.anthropic.com/settings/keys'
   },
   minimax: {
     name: 'MiniMax',
-    consoleUrl: 'https://platform.minimax.io/user-center/basic-information/interface-key',
-    consoleLabel: 'Platform에서 API 키 발급'
+    consoleUrl: 'https://platform.minimax.io/user-center/basic-information/interface-key'
   },
   glm: {
     name: 'Z.AI (智谱)',
-    consoleUrl: 'https://z.ai/manage-apikey/apikey-list',
-    consoleLabel: 'Z.AI에서 API 키 발급'
+    consoleUrl: 'https://z.ai/manage-apikey/apikey-list'
   }
 }
 
@@ -46,6 +42,8 @@ export default function ApiKeyGuideStep({
   onSelectModel,
   onNext
 }: Props): React.JSX.Element {
+  const { t } = useTranslation('steps')
+  const { t: tp } = useTranslation('providers')
   const meta = providerMeta[provider]
   const providerConfig = providerConfigs.find((p) => p.id === provider)!
   const selectedModelId = modelId ?? providerConfig.models[0].id
@@ -53,8 +51,8 @@ export default function ApiKeyGuideStep({
   return (
     <div className="flex-1 flex flex-col min-h-0 px-8">
       <div className="shrink-0 text-center space-y-0.5 pt-2 pb-1.5">
-        <h2 className="text-lg font-extrabold">AI 제공사 선택</h2>
-        <p className="text-text-muted text-xs">사용할 AI 제공사를 선택하고 API 키를 발급받으세요</p>
+        <h2 className="text-lg font-extrabold">{t('apiKeyGuide.title')}</h2>
+        <p className="text-text-muted text-xs">{t('apiKeyGuide.desc')}</p>
       </div>
 
       <div className="shrink-0 flex rounded-xl border border-glass-border overflow-hidden bg-bg-card">
@@ -75,7 +73,9 @@ export default function ApiKeyGuideStep({
 
       {/* 모델 선택 */}
       <div className="flex-1 flex flex-col min-h-0 mt-3">
-        <label className="shrink-0 text-xs font-bold text-text-muted mb-1.5">모델 선택</label>
+        <label className="shrink-0 text-xs font-bold text-text-muted mb-1.5">
+          {t('apiKeyGuide.modelSelect')}
+        </label>
         <div className="space-y-1.5">
           {providerConfig.models.map((m) => (
             <button
@@ -96,7 +96,9 @@ export default function ApiKeyGuideStep({
               />
               <div className="min-w-0 flex-1 flex items-baseline gap-1.5">
                 <span className="text-sm font-bold whitespace-nowrap">{m.name}</span>
-                <span className="text-xs text-text-muted/60 truncate">{m.desc}</span>
+                <span className="text-xs text-text-muted/60 truncate">
+                  {tp(`desc.${m.id}`, m.desc)}
+                </span>
                 {m.price && (
                   <span className="text-[10px] text-text-muted/40 font-mono ml-auto shrink-0">
                     {m.price}
@@ -111,14 +113,14 @@ export default function ApiKeyGuideStep({
             rel="noreferrer"
             className="block text-center text-primary text-xs font-semibold hover:text-primary-light transition-colors py-2"
           >
-            {meta.consoleLabel} &rarr;
+            {t(`apiKeyGuide.getApiKey.${provider}`)} &rarr;
           </a>
         </div>
       </div>
 
       <div className="shrink-0 flex justify-end py-3">
         <Button variant="primary" size="lg" onClick={onNext}>
-          키 준비 완료!
+          {t('apiKeyGuide.keyReady')}
         </Button>
       </div>
     </div>

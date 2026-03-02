@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import StepIndicator from './components/StepIndicator'
 import UpdateBanner from './components/UpdateBanner'
 import { useWizard } from './hooks/useWizard'
@@ -56,6 +57,7 @@ const Bubbles = (): React.JSX.Element => {
 }
 
 function App(): React.JSX.Element {
+  const { t } = useTranslation('common')
   const { currentStep, next, prev, canGoBack, goTo } = useWizard()
   const [installNeeds, setInstallNeeds] = useState<InstallNeeds>({
     needNode: false,
@@ -211,7 +213,7 @@ function App(): React.JSX.Element {
             >
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            이전
+            {t('button.back')}
           </button>
         )}
       </div>

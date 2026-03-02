@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import LobsterLogo from '../components/LobsterLogo'
 import Button from '../components/Button'
 
@@ -42,25 +43,6 @@ const CheckRow = ({
   </div>
 )
 
-const wslStateLabel = (state?: WslState): string => {
-  switch (state) {
-    case 'ready':
-      return '준비됨'
-    case 'no_distro':
-      return 'Ubuntu 미설치'
-    case 'needs_reboot':
-      return '재부팅 필요'
-    case 'not_installed':
-      return '미설치'
-    case 'not_initialized':
-      return '초기화 필요'
-    case 'not_available':
-      return '미지원'
-    default:
-      return '확인 중'
-  }
-}
-
 export default function EnvCheckStep({
   onNext,
   onNeedInstall
@@ -68,9 +50,29 @@ export default function EnvCheckStep({
   onNext: () => void
   onNeedInstall: (env: EnvResult) => void
 }): React.JSX.Element {
+  const { t } = useTranslation(['steps', 'common'])
   const [checking, setChecking] = useState(true)
   const [env, setEnv] = useState<EnvResult | null>(null)
   const [updating, setUpdating] = useState(false)
+
+  const wslStateLabel = (state?: WslState): string => {
+    switch (state) {
+      case 'ready':
+        return t('envCheck.wslState.ready')
+      case 'no_distro':
+        return t('envCheck.wslState.noDistro')
+      case 'needs_reboot':
+        return t('envCheck.wslState.needsReboot')
+      case 'not_installed':
+        return t('envCheck.wslState.notInstalled')
+      case 'not_initialized':
+        return t('envCheck.wslState.notInitialized')
+      case 'not_available':
+        return t('envCheck.wslState.notAvailable')
+      default:
+        return t('envCheck.wslState.checking')
+    }
+  }
 
   const runCheck = (): void => {
     setChecking(true)
@@ -114,33 +116,35 @@ export default function EnvCheckStep({
     <div className="flex-1 flex flex-col items-center pt-16 px-8 gap-5">
       <LobsterLogo state={checking ? 'loading' : allReady ? 'success' : 'idle'} size={72} />
 
-      <h2 className="text-lg font-extrabold">환경 검사</h2>
+      <h2 className="text-lg font-extrabold">{t('envCheck.title')}</h2>
 
       {checking ? (
-        <p className="text-text-muted text-sm animate-pulse">시스템을 확인하고 있습니다...</p>
+        <p className="text-text-muted text-sm animate-pulse">{t('envCheck.scanning')}</p>
       ) : env ? (
         <div className="w-full max-w-xs space-y-2.5">
           <CheckRow
-            label="운영체제"
+            label={t('envCheck.os')}
             ok={true}
             detail={env.os === 'macos' ? 'macOS' : env.os === 'windows' ? 'Windows' : 'Linux'}
           />
           {env.os === 'windows' && (
             <CheckRow
-              label="WSL"
+              label={t('envCheck.wsl')}
               ok={env.wslState === 'ready'}
               detail={wslStateLabel(env.wslState)}
             />
           )}
           <CheckRow
-            label="Node.js"
+            label={t('envCheck.nodejs')}
             ok={env.nodeVersionOk}
-            detail={env.nodeInstalled ? `v${env.nodeVersion}` : '미설치'}
+            detail={env.nodeInstalled ? `v${env.nodeVersion}` : t('common:status.notInstalled')}
           />
           <CheckRow
-            label="OpenClaw"
+            label={t('envCheck.openclaw')}
             ok={env.openclawInstalled}
-            detail={env.openclawInstalled ? `v${env.openclawVersion}` : '미설치'}
+            detail={
+              env.openclawInstalled ? `v${env.openclawVersion}` : t('common:status.notInstalled')
+            }
           />
           {hasUpdate && (
             <button
@@ -148,7 +152,9 @@ export default function EnvCheckStep({
               disabled={updating}
               className="w-full text-xs text-center py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-accent transition-colors disabled:opacity-50"
             >
-              {updating ? '업데이트 중...' : `v${env.openclawLatestVersion} 업데이트 가능`}
+              {updating
+                ? t('common:status.updating')
+                : `v${env.openclawLatestVersion} ${t('envCheck.updateAvailable')}`}
             </button>
           )}
         </div>
@@ -161,7 +167,11 @@ export default function EnvCheckStep({
         disabled={checking}
         loading={checking}
       >
-        {checking ? '검사 중' : allReady ? '다음 단계로' : '필요한 것 설치하기'}
+        {checking
+          ? t('envCheck.checkBtn')
+          : allReady
+            ? t('envCheck.nextBtn')
+            : t('envCheck.installBtn')}
       </Button>
     </div>
   )

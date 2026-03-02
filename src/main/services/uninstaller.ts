@@ -6,6 +6,7 @@ import { BrowserWindow } from 'electron'
 import { stopGateway } from './gateway'
 import { getPathEnv, findBin } from './path-utils'
 import { runInWsl } from './wsl-utils'
+import { t } from '../../shared/i18n/main'
 
 const sendProgress = (win: BrowserWindow, msg: string): void => {
   try {
@@ -36,7 +37,7 @@ export const uninstallOpenClaw = async (
   const log = (msg: string): void => sendProgress(win, msg)
 
   // 1. Gateway 중지
-  log('Gateway 중지 중...')
+  log(t('uninstaller.stoppingGw'))
   try {
     await stopGateway()
   } catch {
@@ -44,7 +45,7 @@ export const uninstallOpenClaw = async (
   }
 
   // 2. npm uninstall -g openclaw
-  log('OpenClaw 패키지 삭제 중...')
+  log(t('uninstaller.removing'))
   if (isWin) {
     await runInWsl('npm uninstall -g openclaw', 60000)
   } else {
@@ -53,7 +54,7 @@ export const uninstallOpenClaw = async (
 
   // 3. (옵션) 설정 디렉토리 삭제
   if (opts.removeConfig) {
-    log('설정 파일 삭제 중...')
+    log(t('uninstaller.removingConfig'))
     if (isWin) {
       await runInWsl('rm -rf /root/.openclaw', 15000)
     } else {
@@ -67,5 +68,5 @@ export const uninstallOpenClaw = async (
     }
   }
 
-  log('삭제 완료!')
+  log(t('uninstaller.done'))
 }

@@ -1,10 +1,13 @@
 import { useState, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import DiagnosticCard from '../components/DiagnosticCard'
 import Button from '../components/Button'
 import LogViewer from '../components/LogViewer'
 import { useInstallLogs } from '../hooks/useIpc'
 
 type DiagStatus = 'ok' | 'warn' | 'error' | 'checking'
+
+type I18nText = { key: string; params?: Record<string, unknown> }
 
 interface DiagItem {
   label: string
@@ -21,45 +24,55 @@ interface TroubleshootStepProps {
 }
 
 export default function TroubleshootStep({ onBack }: TroubleshootStepProps): React.JSX.Element {
+  const { t } = useTranslation('steps')
   const { logs, clearLogs } = useInstallLogs()
   const [showLogs, setShowLogs] = useState(false)
 
-  // 진단 상태
+  const CHECKING: I18nText = { key: 'common:status.checking' }
+
+  // 진단 상태 — 번역 키를 저장하고 렌더 시점에 t()로 변환
   const [envStatus, setEnvStatus] = useState<DiagStatus>('checking')
-  const [envDetail, setEnvDetail] = useState('확인 중...')
+  const [envDetail, setEnvDetail] = useState<I18nText>(CHECKING)
   const [envFixing, setEnvFixing] = useState(false)
 
   const [gwStatus, setGwStatus] = useState<DiagStatus>('checking')
-  const [gwDetail, setGwDetail] = useState('확인 중...')
+  const [gwDetail, setGwDetail] = useState<I18nText>(CHECKING)
   const [gwFixing, setGwFixing] = useState(false)
 
   const [portStatus, setPortStatus] = useState<DiagStatus>('checking')
-  const [portDetail, setPortDetail] = useState('확인 중...')
+  const [portDetail, setPortDetail] = useState<I18nText>(CHECKING)
   const [portFixing, setPortFixing] = useState(false)
 
   const diagnose = useCallback(async () => {
+    const chk: I18nText = { key: 'common:status.checking' }
     setEnvStatus('checking')
-    setEnvDetail('확인 중...')
+    setEnvDetail(chk)
     setGwStatus('checking')
-    setGwDetail('확인 중...')
+    setGwDetail(chk)
     setPortStatus('checking')
-    setPortDetail('확인 중...')
+    setPortDetail(chk)
 
     try {
       const env = await window.electronAPI.env.check()
       if (!env.openclawInstalled) {
         setEnvStatus('error')
-        setEnvDetail('OpenClaw 미설치')
+        setEnvDetail({ key: 'troubleshoot.envStatus.notInstalled' })
       } else if (!env.nodeVersionOk) {
         setEnvStatus('warn')
-        setEnvDetail(`Node.js ${env.nodeVersion ?? '없음'} — 업데이트 필요`)
+        setEnvDetail({
+          key: 'troubleshoot.envStatus.nodeUpdateNeeded',
+          params: { version: env.nodeVersion ?? '?' }
+        })
       } else {
         setEnvStatus('ok')
-        setEnvDetail(`Node ${env.nodeVersion} / OpenClaw ${env.openclawVersion}`)
+        setEnvDetail({
+          key: 'troubleshoot.envStatus.ok',
+          params: { nodeVersion: env.nodeVersion, ocVersion: env.openclawVersion }
+        })
       }
     } catch {
       setEnvStatus('error')
-      setEnvDetail('환경 확인 실패')
+      setEnvDetail({ key: 'troubleshoot.envStatus.failed' })
     }
 
     let gwRunning = false
@@ -67,10 +80,12 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
       const gw = await window.electronAPI.gateway.status()
       gwRunning = gw === 'running'
       setGwStatus(gwRunning ? 'ok' : 'warn')
-      setGwDetail(gwRunning ? '정상 실행 중' : '게이트웨이 중지됨')
+      setGwDetail({
+        key: gwRunning ? 'troubleshoot.gwStatus.running' : 'troubleshoot.gwStatus.stopped'
+      })
     } catch {
       setGwStatus('error')
-      setGwDetail('상태 확인 실패')
+      setGwDetail({ key: 'troubleshoot.gwStatus.failed' })
     }
 
     try {
@@ -78,18 +93,28 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
       if (port.inUse) {
         if (gwRunning) {
           setPortStatus('ok')
-          setPortDetail(`게이트웨이가 사용 중 (PID: ${port.pid ?? '?'})`)
+          setPortDetail({
+            key: 'troubleshoot.portStatus.gwUsing',
+            params: { pid: port.pid ?? '?' }
+          })
         } else {
           setPortStatus('warn')
-          setPortDetail(`다른 프로세스가 점유 중 (PID: ${port.pid ?? '?'})`)
+          setPortDetail({
+            key: 'troubleshoot.portStatus.otherUsing',
+            params: { pid: port.pid ?? '?' }
+          })
         }
       } else {
         setPortStatus(gwRunning ? 'warn' : 'ok')
-        setPortDetail(gwRunning ? '게이트웨이 실행 중이나 포트 미사용' : '포트 18789 사용 가능')
+        setPortDetail({
+          key: gwRunning
+            ? 'troubleshoot.portStatus.gwRunningNoPort'
+            : 'troubleshoot.portStatus.available'
+        })
       }
     } catch {
       setPortStatus('error')
-      setPortDetail('포트 확인 실패')
+      setPortDetail({ key: 'troubleshoot.portStatus.failed' })
     }
   }, [])
 
@@ -114,7 +139,9 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
     const r = await window.electronAPI.gateway.start()
     setGwFixing(false)
     setGwStatus(r.success ? 'ok' : 'error')
-    setGwDetail(r.success ? '정상 실행 중' : '시작 실패')
+    setGwDetail({
+      key: r.success ? 'troubleshoot.gwStatus.running' : 'troubleshoot.gwStatus.failed'
+    })
   }
 
   const fixPort = async (): Promise<void> => {
@@ -128,26 +155,26 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
 
   const items: DiagItem[] = [
     {
-      label: '환경',
-      detail: envDetail,
+      label: t('troubleshoot.env'),
+      detail: t(envDetail.key, envDetail.params),
       status: envStatus,
-      fixLabel: '재설치',
+      fixLabel: t('troubleshoot.reinstall'),
       onFix: fixEnv,
       fixing: envFixing
     },
     {
-      label: '게이트웨이',
-      detail: gwDetail,
+      label: t('troubleshoot.gateway'),
+      detail: t(gwDetail.key, gwDetail.params),
       status: gwStatus,
-      fixLabel: '재시작',
+      fixLabel: t('troubleshoot.restartGw'),
       onFix: fixGateway,
       fixing: gwFixing
     },
     {
-      label: '포트 18789',
-      detail: portDetail,
+      label: 'Port 18789',
+      detail: t(portDetail.key, portDetail.params),
       status: portStatus,
-      fixLabel: 'Doctor Fix',
+      fixLabel: t('troubleshoot.doctorFix'),
       onFix: fixPort,
       fixing: portFixing
     }
@@ -156,8 +183,8 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-10 gap-5">
       <div className="text-center space-y-1.5">
-        <h2 className="text-xl font-black">문제 해결</h2>
-        <p className="text-text-muted text-sm font-medium">자동 진단 후 복구할 수 있습니다</p>
+        <h2 className="text-xl font-black">{t('troubleshoot.title')}</h2>
+        <p className="text-text-muted text-sm font-medium">{t('troubleshoot.desc')}</p>
       </div>
 
       <div className="w-full max-w-md space-y-2">
@@ -172,7 +199,7 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
             onClick={() => setShowLogs((v) => !v)}
             className="text-[11px] text-text-muted/60 hover:text-text-muted transition-colors mb-1"
           >
-            {showLogs ? '▼ 로그 숨기기' : '▶ 로그 보기'}
+            {showLogs ? t('troubleshoot.hideLog') : t('troubleshoot.showLog')}
           </button>
           {showLogs && <LogViewer lines={logs} />}
         </div>
@@ -187,10 +214,10 @@ export default function TroubleshootStep({ onBack }: TroubleshootStepProps): Rea
             diagnose()
           }}
         >
-          다시 진단
+          {t('troubleshoot.rediagnose')}
         </Button>
         <Button variant="secondary" size="sm" onClick={onBack}>
-          이전
+          {t('common:button.back')}
         </Button>
       </div>
     </div>

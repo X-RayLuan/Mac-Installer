@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 type UpdateState = 'idle' | 'available' | 'downloading' | 'downloaded' | 'error'
 
 export default function UpdateBanner(): React.JSX.Element | null {
+  const { t } = useTranslation('management')
   const [state, setState] = useState<UpdateState>('idle')
   const [version, setVersion] = useState('')
   const [percent, setPercent] = useState(0)
@@ -35,19 +37,23 @@ export default function UpdateBanner(): React.JSX.Element | null {
         {state === 'available' && (
           <>
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-semibold flex-1">새 버전 v{version} 사용 가능</span>
+            <span className="text-xs font-semibold flex-1">
+              {t('updateBanner.available', { version })}
+            </span>
             <button
               onClick={() => window.electronAPI.update.download()}
               className="text-xs font-bold text-primary hover:text-primary/80 transition-colors"
             >
-              다운로드
+              {t('updateBanner.download')}
             </button>
           </>
         )}
 
         {state === 'downloading' && (
           <>
-            <span className="text-xs font-semibold flex-1">다운로드 중... {percent}%</span>
+            <span className="text-xs font-semibold flex-1">
+              {t('updateBanner.downloading', { percent })}
+            </span>
             <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-primary rounded-full transition-all duration-300"
@@ -60,12 +66,12 @@ export default function UpdateBanner(): React.JSX.Element | null {
         {state === 'downloaded' && (
           <>
             <div className="w-2 h-2 rounded-full bg-success" />
-            <span className="text-xs font-semibold flex-1">업데이트 준비 완료</span>
+            <span className="text-xs font-semibold flex-1">{t('updateBanner.ready')}</span>
             <button
               onClick={() => window.electronAPI.update.install()}
               className="text-xs font-bold text-success hover:text-success/80 transition-colors"
             >
-              지금 재시작
+              {t('updateBanner.restartNow')}
             </button>
           </>
         )}

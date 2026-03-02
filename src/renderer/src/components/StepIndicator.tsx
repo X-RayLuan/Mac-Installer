@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const defaultSteps = [
   'welcome',
   'envCheck',
@@ -7,7 +9,6 @@ const defaultSteps = [
   'config',
   'done'
 ]
-const defaultLabels = ['시작', '환경', '설치', 'API키', '텔레그램', '설정', '완료']
 
 const windowsSteps = [
   'welcome',
@@ -19,7 +20,6 @@ const windowsSteps = [
   'config',
   'done'
 ]
-const windowsLabels = ['시작', '환경', 'WSL', '설치', 'API키', '텔레그램', '설정', '완료']
 
 export default function StepIndicator({
   currentStep,
@@ -28,8 +28,13 @@ export default function StepIndicator({
   currentStep: string
   isWindows?: boolean
 }): React.JSX.Element {
+  const { t } = useTranslation('steps')
   const steps = isWindows ? windowsSteps : defaultSteps
-  const labels = isWindows ? windowsLabels : defaultLabels
+  const labels = (
+    isWindows
+      ? t('indicator.windows', { returnObjects: true })
+      : t('indicator.default', { returnObjects: true })
+  ) as string[]
   const total = labels.length
   const current = Math.max(0, steps.indexOf(currentStep))
 

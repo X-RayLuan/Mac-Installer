@@ -2,6 +2,7 @@ import { spawn, ChildProcess } from 'child_process'
 import { platform } from 'os'
 import { getPathEnv, findBin } from './path-utils'
 import { checkPort } from './troubleshooter'
+import { t } from '../../shared/i18n/main'
 
 export interface GatewayResult {
   status: string
@@ -96,9 +97,9 @@ const startGatewayWsl = async (): Promise<GatewayResult> => {
 
     child.on('close', (code) => {
       wslGatewayProcess = null
-      emitLog(`[gateway] 프로세스 종료 (code: ${code})`)
+      emitLog(t('gateway.processExit', { code }))
       if (code !== 0 && stderrBuffer) {
-        emitLog(`[gateway] 오류 상세:\n${stderrBuffer.trim()}`)
+        emitLog(`${t('gateway.errorDetail')}\n${stderrBuffer.trim()}`)
       }
       if (!resolved) {
         resolved = true
@@ -112,7 +113,7 @@ const startGatewayWsl = async (): Promise<GatewayResult> => {
 
     child.on('error', (err) => {
       wslGatewayProcess = null
-      emitLog(`[gateway] 오류: ${err.message}`)
+      emitLog(t('gateway.error', { message: err.message }))
       if (!resolved) {
         resolved = true
         resolve({ status: 'error', error: err.message })
@@ -225,7 +226,7 @@ export const startGateway = async (): Promise<GatewayResult> => {
     if (!isServiceMissing) return { status: 'error', error: msg }
 
     // launchd 서비스 미설치 시 자동 설치 후 재시도
-    emitLog('[gateway] 서비스 미설치 감지, install 후 재시도')
+    emitLog(t('gateway.notInstalledRetry'))
     try {
       await runGateway(['install'])
       await runGateway(['start'])

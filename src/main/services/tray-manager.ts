@@ -1,6 +1,7 @@
 import { Tray, Menu, nativeImage, Notification, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { getGatewayStatus, startGateway, stopGateway } from './gateway'
+import { t } from '../../shared/i18n/main'
 
 let tray: Tray | null = null
 let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -35,7 +36,7 @@ const createTrayIcon = (): Electron.NativeImage => {
 const buildMenu = (status: 'running' | 'stopped'): Menu =>
   Menu.buildFromTemplate([
     {
-      label: 'EasyClaw 열기',
+      label: t('tray.open'),
       click: () => {
         const win = deps?.getWin()
         if (win) {
@@ -46,11 +47,11 @@ const buildMenu = (status: 'running' | 'stopped'): Menu =>
     },
     { type: 'separator' },
     {
-      label: status === 'running' ? 'Gateway 실행 중' : 'Gateway 중지됨',
+      label: status === 'running' ? t('tray.gwRunning') : t('tray.gwStopped'),
       enabled: false
     },
     {
-      label: 'Gateway 시작',
+      label: t('tray.gwStart'),
       enabled: status === 'stopped',
       click: async () => {
         try {
@@ -62,7 +63,7 @@ const buildMenu = (status: 'running' | 'stopped'): Menu =>
       }
     },
     {
-      label: 'Gateway 중지',
+      label: t('tray.gwStop'),
       enabled: status === 'running',
       click: async () => {
         await stopGateway()
@@ -71,7 +72,7 @@ const buildMenu = (status: 'running' | 'stopped'): Menu =>
     },
     { type: 'separator' },
     {
-      label: '종료',
+      label: t('tray.quit'),
       click: () => {
         deps?.onQuit()
       }
@@ -88,7 +89,7 @@ const refreshStatus = async (): Promise<void> => {
     if (win && !win.isDestroyed()) {
       win.webContents.send('gateway:status-changed', status)
     }
-    const msg = status === 'running' ? 'Gateway가 실행 중입니다' : 'Gateway가 중지되었습니다'
+    const msg = status === 'running' ? t('tray.notifyRunning') : t('tray.notifyStopped')
     notify('Gateway', msg)
   }
 }
@@ -96,7 +97,7 @@ const refreshStatus = async (): Promise<void> => {
 const updateMenu = (status: 'running' | 'stopped'): void => {
   if (!tray) return
   tray.setContextMenu(buildMenu(status))
-  tray.setToolTip(`EasyClaw - Gateway ${status === 'running' ? '실행 중' : '중지됨'}`)
+  tray.setToolTip(status === 'running' ? t('tray.tooltipRunning') : t('tray.tooltipStopped'))
 }
 
 const notify = (title: string, body: string): void => {
@@ -121,6 +122,10 @@ export const createTray = (trayDeps: TrayDeps): void => {
       }
     })
   }
+}
+
+export const rebuildTrayMenu = (): void => {
+  updateMenu(lastStatus)
 }
 
 export const startPolling = (): void => {

@@ -6,6 +6,7 @@ import { join } from 'path'
 import https from 'https'
 import { BrowserWindow } from 'electron'
 import { runInWsl, readWslFile, writeWslFile } from './wsl-utils'
+import { t } from '../../shared/i18n/main'
 
 interface OnboardConfig {
   provider: 'anthropic' | 'google' | 'openai' | 'minimax' | 'glm'
@@ -115,7 +116,7 @@ export const runOnboard = async (
     win.webContents.send('install:progress', msg)
   }
 
-  log('OpenClaw 초기 설정 시작...')
+  log(t('onboarder.starting'))
 
   const isWindows = platform() === 'win32'
   const isMac = platform() === 'darwin'
@@ -242,11 +243,11 @@ export const runOnboard = async (
       } catch {
         throw e
       }
-      log('설정 파일 생성 완료 (gateway 검증 건너뜀)')
+      log(t('onboarder.configCreatedSkipGw'))
     } else {
       const configPath = join(homedir(), '.openclaw', 'openclaw.json')
       if (!existsSync(configPath)) throw e
-      log('설정 파일 생성 완료 (gateway 검증 건너뜀)')
+      log(t('onboarder.configCreatedSkipGw'))
     }
   }
 
@@ -322,7 +323,7 @@ export const runOnboard = async (
       writeFileSync(modelConfigPath, JSON.stringify(ocConfig, null, 2), { mode: 0o600 })
     }
   }
-  log('기본 설정 완료!')
+  log(t('onboarder.basicDone'))
 
   // plist에 IPv4 fix 적용 (macOS만)
   if (isMac) {
@@ -349,7 +350,7 @@ export const runOnboard = async (
   let botUsername: string | undefined
 
   if (config.telegramBotToken) {
-    log('텔레그램 채널 추가 중...')
+    log(t('onboarder.addingTelegram'))
     const telegramChannel = {
       enabled: true,
       botToken: config.telegramBotToken,
@@ -364,9 +365,9 @@ export const runOnboard = async (
         const ocConfig = JSON.parse(raw)
         ocConfig.channels = { ...ocConfig.channels, telegram: telegramChannel }
         await writeWslFile('/root/.openclaw/openclaw.json', JSON.stringify(ocConfig, null, 2))
-        log('텔레그램 채널 추가 완료!')
+        log(t('onboarder.telegramDone'))
       } catch {
-        log('OpenClaw 설정 파일을 찾을 수 없습니다')
+        log(t('onboarder.configNotFound'))
       }
     } else {
       const configPath = join(homedir(), '.openclaw', 'openclaw.json')
@@ -374,9 +375,9 @@ export const runOnboard = async (
         const ocConfig = JSON.parse(readFileSync(configPath, 'utf-8'))
         ocConfig.channels = { ...ocConfig.channels, telegram: telegramChannel }
         writeFileSync(configPath, JSON.stringify(ocConfig, null, 2), { mode: 0o600 })
-        log('텔레그램 채널 추가 완료!')
+        log(t('onboarder.telegramDone'))
       } else {
-        log('OpenClaw 설정 파일을 찾을 수 없습니다')
+        log(t('onboarder.configNotFound'))
       }
     }
 
@@ -384,17 +385,17 @@ export const runOnboard = async (
   }
 
   if (config.telegramBotToken) {
-    log('Telegram 연결 상태 확인 중...')
+    log(t('onboarder.checkingTelegram'))
     await waitTelegramClear(config.telegramBotToken)
   }
 
   // 모든 패치 완료 후 데몬 재시작
   if (isWindows) {
-    log('기존 Gateway 정리 중...')
+    log(t('onboarder.cleaningGateway'))
     await wslKillOpenclaw().catch(() => {})
     await new Promise((resolve) => setTimeout(resolve, 2000))
   } else if (isMac) {
-    log('Gateway 시작 중...')
+    log(t('onboarder.startingGateway'))
     const plistPath = join(homedir(), 'Library', 'LaunchAgents', 'ai.openclaw.gateway.plist')
     const uid = process.getuid?.() ?? ''
     if (existsSync(plistPath)) {
@@ -453,7 +454,7 @@ export const switchProvider = async (
   const ocBin = isWindows ? 'openclaw' : findBin('openclaw')
   const runCmd = createRunCmd()
 
-  log('프로바이더 전환 시작...')
+  log(t('onboarder.switchStarting'))
 
   // 1. 기존 Telegram 토큰 보존
   let savedTelegram: Record<string, unknown> | null = null
@@ -475,12 +476,12 @@ export const switchProvider = async (
 
   // 2. Telegram 409 충돌 방지
   if (savedTelegram && (savedTelegram as { botToken?: string }).botToken) {
-    log('Telegram 연결 정리 중...')
+    log(t('onboarder.cleaningTelegram'))
     await waitTelegramClear((savedTelegram as { botToken: string }).botToken)
   }
 
   // 3. 기존 프로세스 정리
-  log('기존 Gateway 정리 중...')
+  log(t('onboarder.cleaningGateway'))
   if (isWindows) {
     await wslKillOpenclaw().catch(() => {})
   } else {
@@ -524,7 +525,7 @@ export const switchProvider = async (
   }
 
   // 5. openclaw onboard 재실행
-  log('새 프로바이더로 설정 중...')
+  log(t('onboarder.settingNewProvider'))
   const authFlags: Record<OnboardConfig['provider'], string[]> = {
     anthropic: ['--auth-choice', 'apiKey', '--anthropic-api-key', config.apiKey],
     google: ['--auth-choice', 'gemini-api-key', '--gemini-api-key', config.apiKey],
@@ -564,7 +565,7 @@ export const switchProvider = async (
     } else {
       if (!existsSync(join(homedir(), '.openclaw', 'openclaw.json'))) throw e
     }
-    log('설정 파일 생성 완료 (gateway 검증 건너뜀)')
+    log(t('onboarder.configCreatedSkipGw'))
   }
 
   // 6. 데몬 즉시 중지 (macOS)
@@ -584,7 +585,7 @@ export const switchProvider = async (
   }
 
   // 7. 모델 패치
-  log('모델 설정 적용 중...')
+  log(t('onboarder.applyingModel'))
   const defaultModels: Record<OnboardConfig['provider'], string> = {
     anthropic: 'anthropic/claude-sonnet-4-6',
     google: 'google/gemini-3-flash',
@@ -647,5 +648,5 @@ export const switchProvider = async (
     }
   }
 
-  log('프로바이더 전환 완료!')
+  log(t('onboarder.switchDone'))
 }

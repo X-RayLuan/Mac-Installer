@@ -1,10 +1,11 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
-import { registerIpcHandlers } from './ipc-handlers'
+import { registerIpcHandlers, getSavedLocale } from './ipc-handlers'
 import { createTray, startPolling, destroyTray } from './services/tray-manager'
 import { setupAutoUpdater, checkForUpdates } from './services/updater'
 import { startGateway } from './services/gateway'
+import { initI18nMain } from '../shared/i18n/main'
 import icon from '../../resources/icon.png?asset'
 
 let ipcRegistered = false
@@ -77,7 +78,8 @@ app.on('before-quit', () => {
   isQuitting = true
 })
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  await initI18nMain(getSavedLocale())
   electronApp.setAppUserModelId('com.easyclaw.app')
 
   app.on('browser-window-created', (_, window) => {

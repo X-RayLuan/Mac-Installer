@@ -1,0 +1,164 @@
+{
+  "indicator": {
+    "default": ["开始", "环境", "安装", "API密钥", "Telegram", "配置", "完成"],
+    "windows": ["开始", "环境", "WSL", "安装", "API密钥", "Telegram", "配置", "完成"]
+  },
+  "welcome": {
+    "title": "专属 AI 智能体，一键搞定",
+    "desc": "轻松快速安装 OpenClaw\n通过 Telegram 与 AI 对话",
+    "start": "开始",
+    "language": "语言"
+  },
+  "envCheck": {
+    "title": "环境检查",
+    "scanning": "正在检查系统...",
+    "os": "操作系统",
+    "osName": {
+      "macos": "macOS",
+      "windows": "Windows",
+      "linux": "Linux"
+    },
+    "wsl": "WSL",
+    "wslState": {
+      "ready": "就绪",
+      "noDistro": "未安装 Ubuntu",
+      "needsReboot": "需要重启",
+      "notInstalled": "未安装",
+      "notInitialized": "需要初始化",
+      "notAvailable": "不支持",
+      "checking": "检查中"
+    },
+    "nodejs": "Node.js",
+    "openclaw": "OpenClaw",
+    "updateAvailable": "可更新",
+    "checkBtn": "检查中",
+    "nextBtn": "下一步",
+    "installBtn": "安装所需组件"
+  },
+  "wslSetup": {
+    "title": "WSL 设置",
+    "notAvailable": "此功能需要 Windows 10 2004 或更高版本。",
+    "checkVersion": "请运行 winver 检查 Windows 版本。",
+    "wslRequired": "运行 OpenClaw 需要 WSL（Windows Subsystem for Linux）。",
+    "autoInstall": "将以管理员权限自动安装。",
+    "wslInstalling": "正在安装 WSL...",
+    "wslInstall": "安装 WSL",
+    "rebootRequired": "需要重启",
+    "rebootDesc": "要完成 WSL 安装，需要重启计算机。重启后请重新运行 EasyClaw。",
+    "rebootNow": "立即重启",
+    "ubuntuInstallDesc": "安装 Ubuntu 发行版。",
+    "ubuntuInstalling": "正在安装 Ubuntu...",
+    "ubuntuInstall": "安装 Ubuntu",
+    "ubuntuInitDesc": "Ubuntu 已注册但需要初始化。",
+    "ubuntuIniting": "正在初始化 Ubuntu...",
+    "ubuntuInit": "初始化 Ubuntu",
+    "wslReady": "WSL 准备就绪，继续下一步...",
+    "wslFailed": "WSL 安装失败",
+    "wslError": "安装 WSL 时发生错误",
+    "ubuntuFailed": "Ubuntu 安装失败",
+    "ubuntuError": "安装 Ubuntu 时发生错误"
+  },
+  "install": {
+    "done": "安装完成！",
+    "failed": "安装失败",
+    "progress": "安装中...",
+    "ready": "准备安装",
+    "wait": "请稍候",
+    "allReady": "所有组件已就绪",
+    "checkLog": "请查看日志",
+    "desc": "将安装以下组件",
+    "nodejs": "Node.js 22 LTS",
+    "openclaw": "OpenClaw",
+    "retryBtn": "重试",
+    "startBtn": "开始安装",
+    "nextBtn": "下一步"
+  },
+  "apiKeyGuide": {
+    "title": "选择 AI 提供商",
+    "desc": "选择要使用的 AI 提供商并获取 API 密钥",
+    "modelSelect": "选择模型",
+    "getApiKey": {
+      "google": "在 AI Studio 获取 API 密钥",
+      "openai": "在 Platform 获取 API 密钥",
+      "anthropic": "在控制台获取 API 密钥",
+      "minimax": "在 Platform 获取 API 密钥",
+      "glm": "在 Z.AI 获取 API 密钥"
+    },
+    "keyReady": "密钥已准备好！"
+  },
+  "telegramGuide": {
+    "title": "创建 Telegram 机器人",
+    "desc": "让我们创建一个用于与 AI 智能体对话的 Telegram 机器人",
+    "steps": [
+      {
+        "title": "搜索 BotFather",
+        "desc": "在 Telegram 应用中搜索 @BotFather，选择带有蓝色认证标志的官方机器人。"
+      },
+      {
+        "title": "输入 /newbot 命令",
+        "desc": "在 BotFather 对话中输入 /newbot，它会询问机器人名称。"
+      },
+      {
+        "title": "输入机器人显示名称",
+        "desc": "输入机器人的显示名称。例如：EASYCLAW"
+      },
+      {
+        "title": "设置机器人用户名",
+        "desc": "输入以 _bot 结尾的唯一 ID。例如：my_easyclaw_bot"
+      },
+      {
+        "title": "复制机器人令牌",
+        "desc": "创建完成！请务必复制 123456:ABCDEF... 格式的令牌。"
+      }
+    ],
+    "botfatherLink": "前往 BotFather ->",
+    "tokenReady": "令牌已准备好！"
+  },
+  "config": {
+    "title": "API 密钥配置",
+    "desc": "请输入您获取的密钥",
+    "apiKeyLabel": {
+      "anthropic": "Anthropic API 密钥",
+      "google": "Gemini API 密钥",
+      "openai": "OpenAI API 密钥",
+      "minimax": "MiniMax API 密钥",
+      "glm": "Z.AI API 密钥"
+    },
+    "required": "必填",
+    "telegramToken": "Telegram Bot Token",
+    "telegramHint": "正确格式：123456:ABCDEF...",
+    "errorOccurred": "配置过程中发生错误",
+    "savingBtn": "保存中...",
+    "saveBtn": "保存配置"
+  },
+  "troubleshoot": {
+    "title": "问题排查",
+    "desc": "自动诊断后可进行修复",
+    "env": "环境",
+    "gateway": "网关",
+    "reinstall": "重新安装",
+    "restartGw": "重启",
+    "doctorFix": "Doctor Fix",
+    "rediagnose": "重新诊断",
+    "showLog": "▶ 查看日志",
+    "hideLog": "▼ 隐藏日志",
+    "envStatus": {
+      "notInstalled": "OpenClaw 未安装",
+      "nodeUpdateNeeded": "Node.js {{version}} — 需要更新",
+      "ok": "Node {{nodeVersion}} / OpenClaw {{ocVersion}}",
+      "failed": "环境检查失败"
+    },
+    "gwStatus": {
+      "running": "正常运行中",
+      "stopped": "网关已停止",
+      "failed": "状态检查失败"
+    },
+    "portStatus": {
+      "gwUsing": "网关正在使用（PID: {{pid}}）",
+      "otherUsing": "其他进程占用中（PID: {{pid}}）",
+      "gwRunningNoPort": "网关运行中但未使用端口",
+      "available": "端口 18789 可用",
+      "failed": "端口检查失败"
+    }
+  }
+}
