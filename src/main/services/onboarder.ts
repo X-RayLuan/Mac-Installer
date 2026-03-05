@@ -303,6 +303,16 @@ export const runOnboard = async (
       ...cfg.agents.defaults.model,
       primary: config.modelId || defaultModels[effectiveProvider]
     }
+    // OAuth: register auth profile reference in config
+    if (config.authMethod === 'oauth') {
+      const profileId = 'openai-codex:default'
+      cfg.auth = cfg.auth ?? {}
+      cfg.auth.profiles = {
+        ...cfg.auth.profiles,
+        [profileId]: { provider: 'openai-codex', mode: 'oauth' }
+      }
+      cfg.auth.order = { ...cfg.auth.order, 'openai-codex': [profileId] }
+    }
     const spec = modelSpecs[config.provider]
     if (spec && cfg.models?.providers) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -637,6 +647,16 @@ export const switchProvider = async (
     ocConfig.agents.defaults.model = {
       ...ocConfig.agents.defaults.model,
       primary: selectedModel
+    }
+    // OAuth: register auth profile reference in config
+    if (config.authMethod === 'oauth') {
+      const profileId = 'openai-codex:default'
+      ocConfig.auth = ocConfig.auth ?? {}
+      ocConfig.auth.profiles = {
+        ...ocConfig.auth.profiles,
+        [profileId]: { provider: 'openai-codex', mode: 'oauth' }
+      }
+      ocConfig.auth.order = { ...ocConfig.auth.order, 'openai-codex': [profileId] }
     }
     const spec = modelSpecs[effectiveProvider as OnboardConfig['provider']]
     if (spec && ocConfig.models?.providers) {
