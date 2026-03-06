@@ -12,7 +12,7 @@ No terminal. No npm. No config files.
 
 Download → Run → Enter API key. Done.
 
-🔗 github.com/ybgwon96/easyclaw
+🔗 github.com/X-RayLuan/Mac-Installer
 
 🧵 Here's why I built it and what I learned ↓
 
@@ -35,7 +35,7 @@ I kept seeing people give up at step 2.
 
 **Tweet 3 (Solution)**
 
-So I built EasyClaw — a desktop app that handles everything.
+So I built ClawLite — a desktop app that handles everything.
 
 It auto-detects your environment, installs dependencies, configures your AI provider (Anthropic / Gemini / OpenAI / MiniMax / GLM), and sets up Telegram.
 
@@ -71,10 +71,10 @@ MIT licensed. Fully open source.
 
 Try it out:
 
-🍎 macOS: easyclaw.kr
-🪟 Windows: easyclaw.kr
+🍎 macOS: clawlite.kr
+🪟 Windows: clawlite.kr
 
-⭐ Star on GitHub: github.com/ybgwon96/easyclaw
+⭐ Star on GitHub: github.com/X-RayLuan/Mac-Installer
 
 Feedback, issues, PRs — all welcome!
 

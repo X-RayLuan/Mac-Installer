@@ -1,6 +1,6 @@
 var PRODUCTS = {
   claw: {
-    name: 'EasyClaw',
+    name: 'ClawLite',
     slug: 'claw',
     brandSuffix: 'Claw',
     accent: '#f97316',
@@ -8,15 +8,15 @@ var PRODUCTS = {
     accentLight: '#fdba74',
     accentGlow: 'rgba(249, 115, 22, 0.35)',
     accentDark: '#ea580c',
-    github: 'ybgwon96/easyclaw',
-    dmg: 'easy-claw.dmg',
-    exe: 'easy-claw-setup.exe',
+    github: 'X-RayLuan/Mac-Installer',
+    dmg: 'clawlite.dmg',
+    exe: 'clawlite-setup.exe',
     iconTemplate: 'icon-claw',
     path: '/',
     openChat: 'https://open.kakao.com/o/gbBkPehi',
     demoGif: 'demo.gif',
     productHunt:
-      'https://www.producthunt.com/products/easyclaw-3?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-easyclaw-4',
+      'https://www.producthunt.com/products/clawlite-3?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-clawlite-4',
     productHuntImg:
       'https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1088478&theme=light&t=1772460170834',
     i18nPrefix: '',
