@@ -19,7 +19,7 @@ async function putEmails(emails) {
   })
 }
 
-const ALLOWED_ORIGINS = ['https://easyclaw.kr', 'https://www.easyclaw.kr']
+const ALLOWED_ORIGINS = ['https://clawlite.ai', 'https://www.clawlite.ai']
 
 export default async function handler(req, res) {
   const origin = req.headers.origin
