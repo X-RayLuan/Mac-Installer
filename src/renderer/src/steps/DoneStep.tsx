@@ -344,7 +344,7 @@ export default function DoneStep({
         </div>
       )}
 
-      {/* ─── Star + KakaoTalk chat banner ─── */}
+      {/* ─── Star + Web Chat banner ─── */}
       <div className="w-full max-w-md grid grid-cols-2 gap-2">
         <button
           onClick={() => window.open('https://github.com/X-RayLuan/Mac-Installer', '_blank')}
@@ -357,13 +357,13 @@ export default function DoneStep({
           </div>
         </button>
         <button
-          onClick={() => window.open('https://open.kakao.com/o/gbBkPehi', '_blank')}
+          onClick={() => window.open('http://127.0.0.1:18789', '_blank')}
           className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl cursor-pointer bg-white/5 border border-glass-border hover:border-primary/40 hover:bg-white/8 transition-all duration-200"
         >
-          <span className="text-lg">💬</span>
+          <span className="text-lg">🌐</span>
           <div className="flex-1 text-left">
-            <span className="text-sm font-bold">{t('done.kakaoChat')}</span>
-            <p className="text-[11px] text-text-muted/70">{t('done.kakaoChatDesc')}</p>
+            <span className="text-sm font-bold">Web Chat</span>
+            <p className="text-[11px] text-text-muted/70">Open local OpenClaw dashboard</p>
           </div>
         </button>
       </div>
